@@ -1,15 +1,15 @@
 // ==UserScript==
-// @name         Clean Tracking URLs (Common and Specified Cleaning)
-// @name:zh-CN   跟踪链接净化（通用及定向清理）
+// @name         跟踪链接净化（通用及定向清理）
+// @name:en      Clean Tracking URLs (Common and Specified Cleaning)
 // @name:zh-TW   跟蹤鏈接凈化（通用及定向清理）
 // @namespace    https://greasyfork.org/en/scripts/456881
 // @version      0.5.1
-// @description  Clean all websites' typical tracking contents, as well as targeted cleaning on the specific websites
-// @description:zh-CN 净化所有网站的跟踪链接和事件，网站定向清理
+// @description       净化所有网站的跟踪链接和事件，网站定向清理
+// @description:en    Clean all websites' typical tracking contents, as well as targeted cleaning on the specific websites
 // @description:zh-TW 凈化網際網路上的所有網站鏈接，網站定向清理
 // @author       cilxe
 // @run-at       document-start
-// @match        */*
+// @match        http*://*/*
 // @exclude      *:/*.hdslb.com/*
 // @icon         data:image/png;base64,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
 // @license      MIT
@@ -35,16 +35,18 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
 
 (() => {
   const DELAY_TIME = { fast: 600, normal: 1000, slow: 3000 };
+  const linkRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
   let timeoutID;
   let intervalID;
   let topScroll = 0;
+
   // If <true> block [Lucky Draw (The Selection)] popups on live.bilibili.com.
   const BlockLivePopups = true;
 
   // Common tracking params for all sites
-  const commonParams = ['curator_clanid', 'snr', 'redir',
+  const commonParams = ['curator_clanid', 'snr', 'redir', // Steam
     'utm_source', 'utm_content', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_id', // google analytics
-    'spm', 'spm_id_from', 'from',
+    'spm', 'spm_id_from', 'from', 'embeds_euri', 'source_ve_path',
     'mkt']; // microsoft
 
   // Tracking or other params for certain site
@@ -60,7 +62,7 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
     'lm', 'site', 'sites', 'fr', 'cl', 'bsst', 'lid', 'rsv_spt', 'rsv_bp', 'src', 'sfrom',
     'utm_source', 'utm_medium', 'refer', 'zp_fr', 'channel', 'p_from', 'n_type', 'eqid',
     'uname', 'uid', 'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', // tieba
-    'frwh', 'obj_id', 'fid', 'fname', 'tid', '_t', 'topic_name', 'frs', 't',
+    'frwh', 'obj_id', 'fid', 'fname', 'tid', '_t', 'topic_name', 'frs', 't', 'src',
     'tpl', 'u', 'tb_mod', 'tb_fr',
     '_wkts_', 'ai', 'ck', 'shh']; // wenku
   const douyinParams = ['rsv_idx', 'hisfilter', 'source', 'aid', 'enter_from', 'focus_method', 'gid'];
@@ -81,6 +83,11 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
     const url = new URL(OLD_URL);
     const params = url.searchParams;
     siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
+
+    // With regualr expression, matches all tracking param-names which contains: utm / spm / from
+    // const paramsRegex = /(utm|spm|from)/i;
+    // Array.from(params.keys()).forEach((k) => { if (paramsRegex.test(k)) { params.delete(k); } });
+
     const NEW_URL = url.toString();
     window.history.replaceState({}, 'Restore', NEW_URL);
   }
@@ -89,18 +96,24 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
   function cleanLinks(siteParams) {
     const links = document.getElementsByTagName('a');
     for (let i = 0; i < links.length; i += 1) {
-      // Check if it is real link start with or without http:// or https://
-      const linkRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
       if (linkRegex.test(links[i].href)) {
         const url = new URL(links[i].href);
         const params = url.searchParams;
         siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-        // Specified site actions: 1. Ali sites
+        //  ============== Specified site actions ==============
+        // 1. Ali sites
         if (siteParams === aliParams) { params.set('q', links[i].innerText); }
+        // 2. Tieba.baidu.com
+        if (siteParams === baiduParams && links[i].innerText === '应用中心') {
+          params.set('kw', links[i].innerText);
+        }
         links[i].href = url.toString();
       }
-      // Specified site actions: 2. bilibili 
+      // : 3. bilibili 
       if (siteParams === bilibiliParams) {
+        // Remove Bilibili Card Ads
+        if (links[i].hostname.includes('cm.bilibili.com')) { links[i].remove(); }
+        // Clean <a> link data-url on bilibili.com/video
         const dataLink = links[i].getAttribute('data-url');
         if (dataLink !== null && dataLink.includes('bilibili.com')) {
           if (dataLink.startsWith('//')) {
@@ -123,7 +136,7 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
   function blockClickEvents() {
     const links = document.getElementsByTagName('a');
     for (let i = 0; i < links.length; i += 1) {
-      if (links[i].href !== '') {
+      if (linkRegex.test(links[i].href)) {
         links[i].addEventListener('mousedown', (e) => { e.stopPropagation(); }, true);
         links[i].addEventListener('click', (e) => { e.stopPropagation(); }, true);
       }
@@ -166,6 +179,25 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
       if (metas[i].name === 'spm_prefix') { metas[i].remove(); }
     }
   }
+  // Remove Bilibili Annoyances [Login popups, Ads]
+  function removeBiliAnnoyuances(delayTime) {
+    timeoutID = setTimeout(() => {
+      // bilibili ads
+      let index = 0;
+      do {
+        const cardAds = document.getElementsByTagName('a');
+        for (let i = 0; i < cardAds.length; i += 1) {
+          if (cardAds[i].hostname.includes('cm.bilibili.com')) { cardAds[i].remove(); }
+        }
+        index += 1;
+      } while (index < 2);
+      // bilibili login tips
+      document.getElementsByClassName('lt-row')[0].remove();
+      document.getElementsByClassName('bili-login-card')[0].remove();
+      document.getElementsByClassName('bili-mini-mask')[0].remove();
+      clearTimeout(timeoutID);
+    }, delayTime);
+  }
   // block clicking events (link, button, li)
   function blockBClickEvents() {
     function blockBLinkEvents() {
@@ -182,22 +214,20 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
     }
     blockBLinkEvents();
     function deferredBlockBevents(delayTime) {
-      timeoutID = setTimeout(() => { blockBLinkEvents(); clearTimeout(timeoutID); }, delayTime);
+      timeoutID = setTimeout(() => {
+        cleanLinks(bilibiliParams); removeBiliAnnoyuances(0); blockBLinkEvents(); clearTimeout(timeoutID);
+      }, delayTime);
     }
     deferredBlockBevents(DELAY_TIME.fast);
-    // knowing issue - www.bilibili.com homepage: 
-    // click 'last/next' button on the left-side may stucked
     const buttons = document.getElementsByTagName('button');
     for (let i = 0; i < buttons.length; i += 1) {
       buttons[i].addEventListener('click', () => {
-        cleanLinks(bilibiliParams);
         deferredBlockBevents(DELAY_TIME.fast);
       });
     }
     const lines = document.getElementsByTagName('li');
     for (let i = 0; i < lines.length; i += 1) {
       lines[i].addEventListener('click', () => {
-        cleanLinks(bilibiliParams);
         deferredBlockBevents(DELAY_TIME.fast);
       });
     }
@@ -225,6 +255,7 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
       if (Math.abs(scrolls - topScroll) > 150) {
         restoreState(bilibiliParams);
         cleanLinks(bilibiliParams);
+        removeBiliAnnoyuances(0);
         blockBClickEvents();
         topScroll = scrolls;
       }
@@ -241,6 +272,8 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
   // www.bilibili.com/*, ww.bilibili.com/v/popular/*
   function cleanBMainURL() {
     cleanLinks(bilibiliParams);
+    removeBiliAnnoyuances(DELAY_TIME.fast);
+    deferredCleanLinks(bilibiliParams, DELAY_TIME.normal);
     blockBClickEvents();
   }
 
@@ -483,8 +516,11 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
       case isBilibili:
         restoreState(bilibiliParams);
         removeBiliMetadData();
+        removeBiliAnnoyuances(DELAY_TIME.normal);
         cleanBLTopMenu();
+        cleanLinks(bilibiliParams);
         biliListenScrolling();
+        removeBiliAnnoyuances(DELAY_TIME.slow - 500);
         switch (isBilibili) {
           case isBmain:
             if (isBvideo) {
@@ -534,11 +570,12 @@ This script sets a delay to ensure it load properly, you can customise {DELAY_TI
 
 /*
 # Changelog
-v0.5.1 2023.04
+v0.5.1 2023.04.15
 - Fixed bugs where block clicking-events on empty `<a>` link
 - Update excludes pages.
 - Clean some tracking links under space.bilibili.com after click expand more games.
 - Clean `<a>` links with `data-url` as its target url instead of `href`.
+- Clean the params at embedded youtube videos.
 
 v0.5.0  2023.04.09  
 - Added tmall.hk.
