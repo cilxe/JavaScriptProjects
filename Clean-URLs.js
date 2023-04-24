@@ -3,7 +3,7 @@
 // @name:en      Clean Tracking URLs
 // @name:zh-TW   跟蹤鏈接凈化
 // @namespace    https://greasyfork.org/en/scripts/456881
-// @version      0.5.2
+// @version      0.5.5
 // @description       净化所有网站的跟踪链接和事件
 // @description:en    Clean all tracking URLs, block tracking events on all websites
 // @description:zh-TW 凈化網際網路上的所有網站鏈接和事件
@@ -12,15 +12,15 @@
 // @exclude      *:/*.hdslb.com/*
 // @run-at       document-start
 // @grant        GM_registerMenuCommand
-// @icon         data:image/png;base64,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
+// @icon         data:image/png;base64,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
 // @license      MIT
 // ==/UserScript==
 
 /*
-### Sites that support common cleaning
+### Websites that support common cleaning
 - All websites on the internet.
 
-### Sites that support specified cleaning
+### Websites that support specified cleaning
 - Bilibili
 - Baidu (Unencrypted) URLs
 - CSDN
@@ -45,7 +45,7 @@
     'curator_clanid', 'snr', 'redir', // Steam
     'utm_source', 'utm_content', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_id', 'utm_sources', // google analytics
     'embeds_euri', 'source_ve_path', 'feature', 'spm_id_from', 'vd_source', // embedded video yt/bili
-    'refer_flag'];
+    'refer_flag', 'mark_id'];
 
   // Tracking or other params for certain site
   const bilibiliParams = ['spm_id_from', 'spm_id', 'vd_source', 'from_spmid', 'csource',
@@ -59,8 +59,8 @@
     'lm', 'site', 'sites', 'fr', 'cl', 'bsst', 'lid', 'rsv_spt', 'rsv_bp', 'src', 'sfrom',
     'utm_source', 'utm_medium', 'refer', 'zp_fr', 'channel', 'p_from', 'n_type', 'eqid',
     'uname', 'uid', 'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', // tieba
-    'frwh', 'obj_id', 'fid', 'fname', 'tid', '_t', 'topic_name', 'frs', 't',
-    'tpl', 'u', 'tb_mod', 'tb_fr',
+    'frwh', 'obj_id', 'fid', 'fname', 'tid', '_t', 'topic_name', 'frs', 't', 'share_from',
+    'tpl', 'u', 'tb_mod', 'tb_fr', 'share', 'sfc', 'client_version', 'unique', 'is_video', 'st',
     '_wkts_', 'ai', 'ck', 'shh']; // wenku
   const douyinParams = ['rsv_idx', 'hisfilter', 'source', 'aid', 'enter_from', 'focus_method', 'gid'];
   const csdnParams = ['spm', 'source', 'utm_source', 'ops_request_misc', 'request_id', 'biz_id', 'from_wecom',
@@ -84,7 +84,7 @@
     // With regualr expression, matches all tracking param-names which contains: utm / spm / from
     // const paramsRegex = /^(utm|spm|from)/i;
     // Array.from(params.keys()).forEach((k) => { if (paramsRegex.test(k)) { params.delete(k); } });
-    window.history.replaceState({}, 'Restore', url.toString());
+    if (url.href !== OLD_URL) { window.history.replaceState({}, 'Restore', url.href); }
   }
 
   // Clean <a> links (Common)
@@ -102,7 +102,7 @@
         if (siteParams === baiduParams && links[i].innerText === '应用中心') {
           params.set('kw', links[i].innerText);
         }
-        links[i].href = url.toString();
+        if (links[i].href !== url.href) { links[i].href = url.href; }
       }
       //  3. Bilibili 
       if (siteParams === bilibiliParams) {
@@ -115,7 +115,7 @@
             const url = new URL(`https:${dataLink}`);
             const params = url.searchParams;
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            links[i].setAttribute('data-url', url.toString());
+            links[i].setAttribute('data-url', url.href);
           }
         }
       }
@@ -168,12 +168,13 @@
         }, true);
       }
     }
+    deferredCleanLinks(commonParams, DELAY_TIME.slow - 400);
   }
 
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Bilibili ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   // Remove Bilibili metadata
   function removeBiliMetadData() {
-    const metas = doc.getElementsByTagName('blockBClickEventscccccsdfsdfsfdmeta');
+    const metas = doc.getElementsByTagName('meta');
     for (let i = 0; i < metas.length; i += 1) {
       if (metas[i].name === 'spm_prefix') { metas[i].remove(); }
     }
@@ -231,7 +232,7 @@
     }
     const lines = doc.getElementsByTagName('li');
     for (let i = 0; i < lines.length; i += 1) {
-      if (lines[i].className !== '') {
+      if (lines[i].className !== '' || !lines[i].className.includes('context-sub-menu-item')) {
         lines[i].addEventListener('click', () => {
           deferredBlockBevents(DELAY_TIME.fast);
         });
@@ -275,14 +276,6 @@
       }
     };
   }
-  // www.bilibili.com/*, ww.bilibili.com/v/popular/*
-  function cleanBMainURL() {
-    cleanLinks(bilibiliParams);
-    removeBiliAnnoyances(DELAY_TIME.fast);
-    deferredCleanLinks(bilibiliParams, DELAY_TIME.normal);
-    blockBClickEvents();
-  }
-
   // bilibili search events
   function blockBSearchItemEvents() {
     function blockSearchEvents() {
@@ -321,7 +314,6 @@
   }
   // search.bilibili.com/*
   function cleanBSearch() {
-    blockBClickEvents();
     blockBSearchItemEvents();
     // paging button clicking event
     const pageButtons = doc.getElementsByClassName('vui_pagenation--btn'); // div
@@ -335,8 +327,6 @@
   }
   // www.bilibili.com/video/*
   function cleanBVideoURL() {
-    deferredCleanLinks(bilibiliParams, DELAY_TIME.normal);
-    blockBClickEvents();
     const unfoldVideos = doc.getElementsByClassName('rec-footer');
     for (let i = 0; i < unfoldVideos.length; i += 1) {
       unfoldVideos[i].addEventListener('click', () => {
@@ -349,16 +339,8 @@
       cleanLinks(bilibiliParams); blockBClickEvents(); clearTimeout(timeoutID);
     }, DELAY_TIME.normal);
   }
-  // space.bilibili.com/*
-  function cleanBSpaceURL() {
-    cleanLinks(bilibiliParams);
-    blockBClickEvents();
-    bilibiliListenMoving();
-  }
   // live.bilibili.com/*
   function cleanBLive() {
-    cleanLinks(bilibiliParams);
-    blockBClickEvents();
     // live.bilibili.coom popups
     const livePopupBlock = (selection) => {
       const iframes = doc.getElementsByTagName('iframe');
@@ -395,39 +377,39 @@
     }, DELAY_TIME.slow + 1000 * 300);
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Baidu ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
-  function cleanBDLinks(siteParams) {
-    cleanLinks(baiduParams);
-    const links = doc.getElementsByTagName('a');
-    for (let i = 0; i < links.length; i += 1) {
-      if (links[i].href !== '') {
-        if (links[i].hostname.includes('zhidao.baidu.com') && links[i].pathname === '/q') {
-          links[i].pathname = '/search';
-        }
-        links[i].href = links[i].href.replace('from=', '');
-      }
-    }
-    const areas = doc.getElementsByTagName('area');
-    if (areas.length === 1) {
-      const areaURL = new URL(areas[0].href);
-      const params = areaURL.searchParams;
-      siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-      areas[0].href = areaURL.toString();
-    }
-  }
-  function deferredCleanBDLinks(delayTime) {
-    timeoutID = setTimeout(() => { cleanBDLinks(baiduParams); clearTimeout(timeoutID); }, delayTime - 200);
-  }
-  function blockBDTrackingEvents() {
-    const links = doc.getElementsByTagName('a');
-    for (let i = 0; i < links.length; i += 1) {
-      if (links[i].href !== '') {
-        links[i].addEventListener('click', () => { deferredCleanBDLinks(DELAY_TIME.fast); }, true);
-      }
-    }
-  }
   // Baidu related search, Hot search URL cleaning
-  function cleanBaiduURL() {
+  function cleanBaidu() {
     restoreState(baiduParams);
+    function cleanBDLinks(siteParams) {
+      cleanLinks(baiduParams);
+      const links = doc.getElementsByTagName('a');
+      for (let i = 0; i < links.length; i += 1) {
+        if (links[i].href !== '') {
+          if (links[i].hostname.includes('zhidao.baidu.com') && links[i].pathname === '/q') {
+            links[i].pathname = '/search';
+          }
+          links[i].href = links[i].href.replace('from=', '');
+        }
+      }
+      const areas = doc.getElementsByTagName('area');
+      if (areas.length === 1) {
+        const areaURL = new URL(areas[0].href);
+        const params = areaURL.searchParams;
+        siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
+        areas[0].href = areaURL.href;
+      }
+    }
+    function deferredCleanBDLinks(delayTime) {
+      timeoutID = setTimeout(() => { cleanBDLinks(baiduParams); clearTimeout(timeoutID); }, delayTime - 200);
+    }
+    function blockBDTrackingEvents() {
+      const links = doc.getElementsByTagName('a');
+      for (let i = 0; i < links.length; i += 1) {
+        if (links[i].href !== '') {
+          links[i].addEventListener('click', () => { deferredCleanBDLinks(DELAY_TIME.fast); }, true);
+        }
+      }
+    }
     cleanBDLinks(baiduParams);
     blockBDTrackingEvents();
     window.onscroll = () => {
@@ -500,8 +482,64 @@
       }
     };
   }
-
-  window.onload = () => {
+  // Main execution
+  function mainExec() {
+    const CUR_HOST = window.location.hostname;
+    const CUR_URL = window.location.href;
+    const isBilibili = CUR_HOST.includes('bilibili.com') || CUR_HOST.includes('biligame.com');
+    const isBmain = CUR_HOST.includes('www.bilibili.com') || CUR_URL.includes('www.bilibili.com/index.html');
+    const isBvideo = CUR_URL.includes('www.bilibili.com/video');
+    const isBsearch = CUR_HOST.includes('search.bilibili.com');
+    const isBlive = CUR_HOST.includes('live.bilibili.com');
+    const isBaidu = CUR_HOST.includes('baidu.com');
+    const isDouyin = CUR_HOST.includes('douyin.com');
+    const isCSDN = CUR_HOST.includes('csdn.net');
+    const isAli = CUR_HOST.includes('alibaba.com') || CUR_HOST.includes('alibabagroup.com')
+               || CUR_HOST.includes('aliyun.com') || CUR_HOST.includes('alimama.com')
+               || CUR_HOST.includes('aliexpress.com') || CUR_HOST.includes('taobao.com')
+               || CUR_HOST.includes('tmall.com') || CUR_HOST.includes('tmall.hk')
+               || CUR_HOST.includes('1688.com');
+    let siteParams; // For script menu
+    switch (true) {
+      case isBilibili:
+        restoreState(bilibiliParams); cleanLinks(bilibiliParams); removeBiliMetadData();
+        removeBiliAnnoyances(0); cleanBLTopMenu();
+        blockBClickEvents(); biliListenScrolling(); bilibiliListenMoving();
+        siteParams = bilibiliParams;
+        switch (isBilibili) {
+          case isBmain:
+            if (isBvideo) { cleanBVideoURL(); }
+            break;
+          case isBsearch:
+            cleanBSearch();
+            break;
+          case isBlive:
+            cleanBLive(); deferredCleanLinks(bilibiliParams, DELAY_TIME.slow - 500);
+            break;
+          default: // space passport account message member t app manga show link biligame
+            deferredCleanLinks(bilibiliParams, DELAY_TIME.slow - 600);
+            break;
+        }
+        break;
+      case isBaidu:
+        siteParams = baiduParams; cleanBaidu();
+        break;
+      case isAli:
+        siteParams = aliParams; cleanAliSites();
+        break;
+      case CUR_HOST.includes('youku.com'):
+        siteParams = youkuParams; cleanYouku();
+        break;
+      case isCSDN:
+        siteParams = csdnParams; cleanCSDN();
+        break;
+      case isDouyin:
+        siteParams = douyinParams; restoreState(douyinParams);
+        break;
+      default:
+        siteParams = commonParams; commonClean();
+        break;
+    }
     // Menu language (May not properly changed due to browser settings)
     const userLanguage = navigator.language;
     let MenuTitle;
@@ -516,84 +554,21 @@
         MenuTitle = 'Manually retry link cleaning';
         break;
     }
-    const CUR_HOST = window.location.hostname;
-    const CUR_URL = window.location.href;
-    const isBilibili = CUR_HOST.includes('bilibili.com') || CUR_HOST.includes('biligame.com');
-    const isBmain = CUR_HOST.includes('www.bilibili.com') || CUR_URL.includes('www.bilibili.com/index.html');
-    const isBvideo = CUR_URL.includes('www.bilibili.com/video');
-    const isBsearch = CUR_HOST.includes('search.bilibili.com');
-    const isBspace = CUR_HOST.includes('space.bilibili.com');
-    const isBlive = CUR_HOST.includes('live.bilibili.com');
-    const isBaidu = CUR_HOST.includes('baidu.com');
-    const isDouyin = CUR_HOST.includes('douyin.com');
-    const isCSDN = CUR_HOST.includes('csdn.net');
-    const isAli = CUR_HOST.includes('alibaba.com') || CUR_HOST.includes('alibabagroup.com')
-               || CUR_HOST.includes('aliyun.com') || CUR_HOST.includes('alimama.com')
-               || CUR_HOST.includes('aliexpress.com') || CUR_HOST.includes('taobao.com')
-               || CUR_HOST.includes('tmall.com') || CUR_HOST.includes('tmall.hk')
-               || CUR_HOST.includes('1688.com');
-    switch (true) {
-      case isBilibili:
-        restoreState(bilibiliParams);
-        removeBiliMetadData();
-        removeBiliAnnoyances(DELAY_TIME.normal);
-        cleanBLTopMenu();
-        cleanLinks(bilibiliParams);
-        biliListenScrolling();
-        removeBiliAnnoyances(DELAY_TIME.slow - 500);
-        switch (isBilibili) {
-          case isBmain:
-            if (isBvideo) {
-              cleanBVideoURL();
-            } else {
-              timeoutID = setTimeout(() => { cleanBMainURL(); clearTimeout(timeoutID); }, DELAY_TIME.fast);
-            }
-            break;
-          case isBsearch:
-            cleanBSearch();
-            break;
-          case isBspace:
-            cleanBSpaceURL();
-            break;
-          case isBlive:
-            cleanBLive();
-            deferredCleanLinks(bilibiliParams, DELAY_TIME.slow - 200);
-            break;
-          default: // passport account message member t app manga show link biligame
-            cleanLinks(bilibiliParams);
-            deferredCleanLinks(bilibiliParams, DELAY_TIME.slow - 600);
-            break;
-        }
-        break;
-      case isBaidu:
-        cleanBaiduURL();
-        break;
-      case isDouyin:
-        restoreState(douyinParams);
-        break;
-      case isCSDN:
-        cleanCSDN();
-        break;
-      case CUR_HOST.includes('youku.com'):
-        cleanYouku();
-        break;
-      case isAli:
-        cleanAliSites();
-        break;
-      default: // For all other sites
-        commonClean();
-        deferredCleanLinks(commonParams, DELAY_TIME.slow - 400);
-        // eslint-disable-next-line no-undef
-        GM_registerMenuCommand(MenuTitle, () => {
-          cleanLinks(commonParams);
-        }, 'C');
-        break;
-    }
-  };
+    // eslint-disable-next-line no-undef
+    GM_registerMenuCommand(MenuTitle, () => { cleanLinks(siteParams); }, 'C');
+  }
+  mainExec();
 })();
 
 /*
 # Changelog
+v0.5.5 2023.04.30  
+- Restore normall events withen the bili-live player under right-menu clicking.
+- Fixed some coding errors.
+- Update script icon.
+- Add more tracking parameters.
+- Several optimisations and bug fixes, improve cleaning speed.
+
 v0.5.2 2023.04.20
 - Update site params (add, remove) (Duplicate or necessary parameters for certain sites).
 - Add a condition before bind a event-listenser to button tags.
@@ -660,7 +635,7 @@ v0.4.3.1 2023.03.01
 - Clean more links at live.bilibili.com. [Bilibili]
 - Script optimisation.
 
-v0.4.3 2023.02.24   
+v0.4.3 2023.02.24  
 - Block more tracking events. [Bilibili]
 - Clean more links.[Bilibili]
 - Restore link jump events at comment area. [Bilibili]
@@ -725,7 +700,7 @@ v0.3.5 2022.12.27
 v0.3.4 2022.12.23  
 - Code optimisation. Fixed script's effect range. [Bilibili]
 
-v0.3.3 2022.12.23
+v0.3.3 2022.12.23  
 - Added site support：Clean Baidu <Related Search> URLs.
 - Script optimisations. [space.bilibili.com]
 
