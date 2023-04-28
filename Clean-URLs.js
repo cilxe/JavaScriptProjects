@@ -227,7 +227,7 @@
       if (buttons[i].className !== '') {
         buttons[i].addEventListener('click', () => {
           deferredBlockBevents(DELAY_TIME.fast);
-        });
+        }, true);
       }
     }
     const lines = doc.getElementsByTagName('li');
@@ -235,7 +235,7 @@
       if (lines[i].className !== '' || !lines[i].className.includes('context-sub-menu-item')) {
         lines[i].addEventListener('click', () => {
           deferredBlockBevents(DELAY_TIME.fast);
-        });
+        }, true);
       }
     }
   }
@@ -284,33 +284,33 @@
       for (let i = 0; i < suggestItems.length; i += 1) {
         suggestItems[i].addEventListener('click', () => {
           blockBClickEvents(); deferredBlockBClickEvents(DELAY_TIME.fast);
-        });
+        }, true);
       }
       // search trending items
       const topSearchs = doc.getElementsByClassName('trending-item');
       for (let i = 0; i < topSearchs.length; i += 1) {
         topSearchs[i].addEventListener('click', () => {
           deferredBlockBClickEvents(DELAY_TIME.fast);
-        });
+        }, true);
       }
       // search history items
       const historyItems = doc.getElementsByClassName('history-item');
       for (let i = 0; i < historyItems.length; i += 1) {
         historyItems[i].addEventListener('click', () => {
           deferredBlockBClickEvents(DELAY_TIME.fast);
-        });
+        }, true);
       }
     }
     // search input area
     const searchInputs = doc.getElementsByClassName('search-input-el');
     searchInputs[0].addEventListener('click', () => {
       timeoutID = setTimeout(() => { blockSearchEvents(); clearTimeout(timeoutID); }, DELAY_TIME.fast);
-    });
+    }, true);
     // clear icon
     const clearIcon = doc.getElementsByClassName('clear-icon')[0];
     clearIcon.addEventListener('click', () => {
       timeoutID = setTimeout(() => { blockSearchEvents(); clearTimeout(timeoutID); }, DELAY_TIME.fast);
-    });
+    }, true);
   }
   // search.bilibili.com/*
   function cleanBSearch() {
@@ -320,27 +320,24 @@
     for (let i = 0; i < pageButtons.length; i += 1) {
       pageButtons[i].addEventListener('click', () => {
         deferredBlockBClickEvents(DELAY_TIME.fast);
-      });
+      }, true);
     }
     deferredBlockBClickEvents(DELAY_TIME.normal);
     deferredCleanLinks(bilibiliParams, DELAY_TIME.slow - 600);
   }
   // www.bilibili.com/video/*
   function cleanBVideoURL() {
-    const unfoldVideos = doc.getElementsByClassName('rec-footer');
-    for (let i = 0; i < unfoldVideos.length; i += 1) {
-      unfoldVideos[i].addEventListener('click', () => {
-        restoreState(bilibiliParams);
+    window.onload = () => {
+      console.log('329 cleanBVideoURL');
+      const unfoldVideo = doc.getElementsByClassName('rec-footer')[0];
+      unfoldVideo.addEventListener('click', () => {
         deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
-        deferredBlockBClickEvents(bilibiliParams, DELAY_TIME.normal);
-      });
-    }
-    timeoutID = setTimeout(() => {
-      cleanLinks(bilibiliParams); blockBClickEvents(); clearTimeout(timeoutID);
-    }, DELAY_TIME.normal);
+        deferredBlockBClickEvents(bilibiliParams, DELAY_TIME.fast);
+      }, true);
+    };
   }
   // live.bilibili.com/*
-  function cleanBLive() {
+  function cleanBLive(delayTime) {
     // live.bilibili.coom popups
     const livePopupBlock = (selection) => {
       const iframes = doc.getElementsByTagName('iframe');
@@ -357,20 +354,21 @@
         }
       }
     };
-    const navis = doc.getElementsByClassName('tabs__tag-item');
-    for (let i = 0; i < navis.length; i += 1) {
-      navis[i].addEventListener('click', () => {
-        deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
-      });
-    }
-    const tabItems = doc.getElementsByClassName('tab-item');
-    for (let i = 0; i < tabItems.length; i += 1) {
-      tabItems[i].addEventListener('click', () => {
-        blockBClickEvents();
-        deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
-      });
-    }
-    biliListenScrolling();
+    timeoutID = setTimeout(() => {
+      const navis = doc.getElementsByClassName('tabs__tag-item'); // cat
+      for (let i = 0; i < navis.length; i += 1) {
+        navis[i].addEventListener('click', () => {
+          deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
+        }, true);
+      }
+      const tabItems = doc.getElementsByClassName('tab-item'); // sort
+      for (let i = 0; i < tabItems.length; i += 1) {
+        tabItems[i].addEventListener('click', () => {
+          blockBClickEvents();
+          deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
+        }, true);
+      }
+    }, delayTime);
     intervalID = setInterval(livePopupBlock(BlockLivePopups), DELAY_TIME.normal);
     timeoutID = setTimeout(() => {
       clearInterval(intervalID); clearTimeout(timeoutID);
@@ -399,16 +397,15 @@
         areas[0].href = areaURL.href;
       }
     }
-    function deferredCleanBDLinks(delayTime) {
-      timeoutID = setTimeout(() => { cleanBDLinks(baiduParams); clearTimeout(timeoutID); }, delayTime - 200);
-    }
     function blockBDTrackingEvents() {
-      const links = doc.getElementsByTagName('a');
-      for (let i = 0; i < links.length; i += 1) {
-        if (links[i].href !== '') {
-          links[i].addEventListener('click', () => { deferredCleanBDLinks(DELAY_TIME.fast); }, true);
+      window.onload = () => {
+        const links = doc.getElementsByTagName('a');
+        for (let i = 0; i < links.length; i += 1) {
+          if (links[i].href !== '') {
+            links[i].addEventListener('click', () => { cleanBDLinks(baiduParams); }, true);
+          }
         }
-      }
+      };
     }
     cleanBDLinks(baiduParams);
     blockBDTrackingEvents();
@@ -502,24 +499,25 @@
     let siteParams; // For script menu
     switch (true) {
       case isBilibili:
-        restoreState(bilibiliParams); cleanLinks(bilibiliParams); removeBiliMetadData();
-        removeBiliAnnoyances(0); cleanBLTopMenu();
-        blockBClickEvents(); biliListenScrolling(); bilibiliListenMoving();
+        restoreState(bilibiliParams); cleanLinks(bilibiliParams); cleanBLTopMenu();
+        removeBiliAnnoyances(0);
+        blockBClickEvents(); biliListenScrolling();
         siteParams = bilibiliParams;
         switch (isBilibili) {
           case isBmain:
-            if (isBvideo) { cleanBVideoURL(); }
+            if (isBvideo) { cleanBVideoURL(); } else { bilibiliListenMoving(); }
             break;
           case isBsearch:
-            cleanBSearch();
+            cleanBSearch(); bilibiliListenMoving();
             break;
           case isBlive:
-            cleanBLive(); deferredCleanLinks(bilibiliParams, DELAY_TIME.slow - 500);
+            cleanBLive(DELAY_TIME.normal);
             break;
           default: // space passport account message member t app manga show link biligame
-            deferredCleanLinks(bilibiliParams, DELAY_TIME.slow - 600);
+            bilibiliListenMoving();
             break;
         }
+        doc.addEventListener('DOMContentLoaded', () => { removeBiliMetadData(); });
         break;
       case isBaidu:
         siteParams = baiduParams; cleanBaidu();
@@ -562,12 +560,12 @@
 
 /*
 # Changelog
-v0.5.5 2023.04.30  
+v0.5.5 2023.04.28  
 - Restore normall events withen the bili-live player under right-menu clicking.
-- Fixed some coding errors.
+- Fixed some coding errors and bug fixes.
 - Update script icon.
 - Add more tracking parameters.
-- Several optimisations and bug fixes, improve cleaning speed.
+- Several optimisations, improve cleaning speed.
 
 v0.5.2 2023.04.20
 - Update site params (add, remove) (Duplicate or necessary parameters for certain sites).
