@@ -3,7 +3,7 @@
 // @name:en      Clean Tracking URLs
 // @name:zh-TW   跟蹤鏈接凈化
 // @namespace    https://greasyfork.org/en/scripts/456881
-// @version      0.5.7
+// @version      0.5.7.1
 // @description       净化所有网站的跟踪链接和事件
 // @description:en    Clean all tracking URLs, block tracking events on all websites
 // @description:zh-TW 凈化網際網路上的所有網站鏈接和事件
@@ -74,7 +74,6 @@
     'stats_click', 'initiative_id', 'wh_pid', 'wh_random_str', 'source', 'suggest',
     'suggest_query', 'scm', 'pvid', 'topOfferIds', 'search_condition', 'industryCatId',
   ];
-
   //  Restore history state, remove redundant params (Common)
   function restoreState(siteParams) {
     const OLD_URL = window.location.href;
@@ -145,6 +144,12 @@
 
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Common sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function commonClean() {
+    // additional params for certain sites
+    if (pageHost.includes('github.com')) { commonParams.push('ref_cta', 'ref_loc', 'ref_page'); }
+    if (pageHost.includes('medium.com')) { commonParams.push('source'); }
+    if (pageHost.includes('xda-developers.com')) {
+      commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign');
+    }
     restoreState(commonParams);
     window.onload = () => {
       cleanLinks(commonParams);
@@ -495,6 +500,20 @@
   }
 
   (() => {
+    // Menu language (May not properly changed due to browser settings)
+    const userLanguage = navigator.language;
+    let MenuTitle;
+    switch (true) {
+      case userLanguage === 'zh-CN' || userLanguage === 'zh-SG':
+        MenuTitle = '手动清理链接';
+        break;
+      case userLanguage === 'zh-TW' || userLanguage === 'zh-HK':
+        MenuTitle = '手動清理連結';
+        break;
+      default: // English and others
+        MenuTitle = 'Manually retry link cleaning';
+        break;
+    }
     const isBilibili = pageHost.includes('bilibili.com') || pageHost.includes('biligame.com');
     const isBmain = pageHost.includes('www.bilibili.com') || pageURL.includes('www.bilibili.com/index.html');
     const isBvideo = pageURL.includes('www.bilibili.com/video');
@@ -505,7 +524,6 @@
     const isCSDN = pageHost.includes('csdn.net');
     const aliRegex = /([\w.]{0,})(alibaba|alibabagroup|aliyun|alimama|aliexpress|taobao|tmall|1688).(com|hk|cn)/;
     const isAli = aliRegex.test(pageHost);
-
     let siteParams; // For script menu
     switch (true) {
       case isBilibili:
@@ -544,37 +562,23 @@
       case isDouyin:
         siteParams = douyinParams; restoreState(douyinParams);
         break;
-      default: // additional params for certain sites
-        if (pageHost.includes('github.com')) { siteParams.push('ref_cta', 'ref_loc', 'ref_page'); }
-        if (pageHost.includes('medium.com')) { commonParams.push('source'); }
-        if (pageHost.includes('xda-developers.com')) {
-          commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign');
-        }
+      default:
         siteParams = commonParams; commonClean();
         break;
     }
-    // Menu language (May not properly changed due to browser settings)
-    const userLanguage = navigator.language;
-    let MenuTitle;
-    switch (true) {
-      case userLanguage === 'zh-CN' || userLanguage === 'zh-SG':
-        MenuTitle = '手动清理链接';
-        break;
-      case userLanguage === 'zh-TW' || userLanguage === 'zh-HK':
-        MenuTitle = '手動清理連結';
-        break;
-      default: // English and others
-        MenuTitle = 'Manually retry link cleaning';
-        break;
-    }
-    // eslint-disable-next-line no-undef
-    GM_registerMenuCommand(MenuTitle, () => { cleanLinks(siteParams); }, 'C');
+    window.onload = () => {
+      // eslint-disable-next-line no-undef
+      GM_registerMenuCommand(MenuTitle, () => { cleanLinks(siteParams); }, 'C');
+    };
   })();
 })();
 
 /*
 # Changelog
-v0.5.7 2023.05
+v0.5.7.1 2023.05
+- Fix an issue where the script submenu on github.com was not displayed successfully.
+
+v0.5.7 2023.05.05
 - Optiomise the monitoring of certain events.
 - Remove more parameters for `github|medium|xda-developers|youku.(com)`.
 - Bug fixes.
