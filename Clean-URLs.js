@@ -3,7 +3,7 @@
 // @name:en      Clean Tracking URLs
 // @name:zh-TW   跟蹤鏈接凈化
 // @namespace    https://greasyfork.org/en/scripts/456881
-// @version      0.5.5
+// @version      0.5.7
 // @description       净化所有网站的跟踪链接和事件
 // @description:en    Clean all tracking URLs, block tracking events on all websites
 // @description:zh-TW 凈化網際網路上的所有網站鏈接和事件
@@ -32,11 +32,13 @@
 
 (() => {
   const DELAY_TIME = { fast: 600, normal: 1000, slow: 3000 };
-  const linkRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
+  const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
   let timeoutID;
   let intervalID;
   let topScroll = 0;
   const doc = document;
+  const pageHost = window.location.hostname;
+  const pageURL = window.location.href;
 
   // If <true> block [Lucky Draw (The Selection)] popups on live.bilibili.com.
   const BlockLivePopups = true;
@@ -45,8 +47,7 @@
     'curator_clanid', 'snr', 'redir', // Steam
     'utm_source', 'utm_content', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_id', 'utm_sources', // google analytics
     'embeds_euri', 'source_ve_path', 'feature', 'spm_id_from', 'vd_source', // embedded video yt/bili
-    'refer_flag', 'mark_id'];
-
+    'refer_flag', 'mark_id', 'page_from'];
   // Tracking or other params for certain site
   const bilibiliParams = ['spm_id_from', 'spm_id', 'vd_source', 'from_spmid', 'csource',
     'sourceFrom', 'hotRank', 'live_from', 'from', 'launch_id', 'msource', 'popular_rank',
@@ -59,13 +60,13 @@
     'lm', 'site', 'sites', 'fr', 'cl', 'bsst', 'lid', 'rsv_spt', 'rsv_bp', 'src', 'sfrom',
     'utm_source', 'utm_medium', 'refer', 'zp_fr', 'channel', 'p_from', 'n_type', 'eqid',
     'uname', 'uid', 'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', // tieba
-    'frwh', 'obj_id', 'fid', 'fname', 'tid', '_t', 'topic_name', 'frs', 't', 'share_from',
+    'frwh', 'obj_id', 'fid', 'fname', '_t', 'topic_name', 'frs', 't', 'share_from',
     'tpl', 'u', 'tb_mod', 'tb_fr', 'share', 'sfc', 'client_version', 'unique', 'is_video', 'st',
     '_wkts_', 'ai', 'ck', 'shh']; // wenku
   const douyinParams = ['rsv_idx', 'hisfilter', 'source', 'aid', 'enter_from', 'focus_method', 'gid'];
   const csdnParams = ['spm', 'source', 'utm_source', 'ops_request_misc', 'request_id', 'biz_id', 'from_wecom',
     'utm_medium', 'utm_term', 'utm_medium', 'utm_campaign'];
-  const youkuParams = ['spm', 'scm', 'from', 's', 'playMode'];
+  const youkuParams = ['spm', 'scm', 'from', 's', 'playMode', 'client_id'];
   const aliParams = [
     // ali
     'spm', 'utm_content', 'lwfrom', 'from', 'scene',
@@ -91,7 +92,8 @@
   function cleanLinks(siteParams) {
     const links = doc.getElementsByTagName('a');
     for (let i = 0; i < links.length; i += 1) {
-      if (linkRegex.test(links[i].href)) {
+      if (urlRegex.test(links[i].href)) {
+        // console.log(links[i].hostname);
         const url = new URL(links[i].href);
         const params = url.searchParams;
         siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
@@ -110,8 +112,8 @@
         if (links[i].hostname.includes('cm.bilibili.com')) { links[i].remove(); }
         // Clean <a> link data-url on bilibili.com/video
         const dataLink = links[i].getAttribute('data-url');
-        if (dataLink !== null && dataLink.includes('bilibili.com')) {
-          if (dataLink.startsWith('//')) {
+        if (dataLink !== null) {
+          if (dataLink.includes('bilibili.com') && dataLink.startsWith('//')) {
             const url = new URL(`https:${dataLink}`);
             const params = url.searchParams;
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
@@ -132,7 +134,7 @@
     timeoutID = setTimeout(() => {
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
-        if (linkRegex.test(links[i].href)) {
+        if (urlRegex.test(links[i].href)) {
           links[i].addEventListener('mousedown', (e) => { e.stopPropagation(); }, true);
           links[i].addEventListener('click', (e) => { e.stopPropagation(); }, true);
         }
@@ -144,31 +146,33 @@
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Common sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function commonClean() {
     restoreState(commonParams);
-    cleanLinks(commonParams);
+    window.onload = () => {
+      cleanLinks(commonParams);
+      const divs = doc.getElementsByTagName('div');
+      for (let i = 0; i < divs.length; i += 1) {
+        if (divs[i].className !== '') {
+          divs[i].addEventListener('click', () => {
+            deferredCleanLinks(commonParams, DELAY_TIME.fast);
+          }, true);
+        }
+      }
+      const btns = doc.getElementsByTagName('button');
+      for (let i = 0; i < btns.length; i += 1) {
+        if (btns[i].className !== '') {
+          btns[i].addEventListener('click', () => {
+            deferredCleanLinks(commonParams, DELAY_TIME.fast);
+          }, true);
+        }
+      }
+    };
+    deferredCleanLinks(commonParams, DELAY_TIME.slow - 400);
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-      if (scrolls - topScroll > 150) { // stop executiing when scrolling from bottom of the page
+      if (scrolls - topScroll > 150) { // executiing until scrolling to the bottom of the page
         cleanLinks(commonParams);
         topScroll = scrolls;
       }
     };
-    const divs = doc.getElementsByTagName('div');
-    for (let i = 0; i < divs.length; i += 1) {
-      if (divs[i].className !== '') {
-        divs[i].addEventListener('click', () => {
-          deferredCleanLinks(commonParams, DELAY_TIME.normal + 200);
-        }, true);
-      }
-    }
-    const btns = doc.getElementsByTagName('button');
-    for (let i = 0; i < btns.length; i += 1) {
-      if (btns[i].className !== '') {
-        btns[i].addEventListener('click', () => {
-          deferredCleanLinks(commonParams, DELAY_TIME.normal + 200);
-        }, true);
-      }
-    }
-    deferredCleanLinks(commonParams, DELAY_TIME.slow - 400);
   }
 
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Bilibili ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
@@ -181,6 +185,7 @@
   }
   // Remove Bilibili Annoyances [Login popups, Ads]
   function removeBiliAnnoyances(delayTime) {
+    clearTimeout(timeoutID);
     timeoutID = setTimeout(() => {
       // bilibili ads
       let index = 0;
@@ -198,7 +203,6 @@
       if (loginTip !== undefined) { loginTip.remove(); }
       if (loginCard !== undefined) { loginCard.remove(); }
       if (loginMask !== undefined) { loginMask.remove(); }
-      clearTimeout(timeoutID);
     }, delayTime);
   }
   // block clicking events (link, button, li)
@@ -206,7 +210,7 @@
     function blockBLinkEvents() {
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
-        if (links[i].getAttribute('data-video-time') === null && linkRegex.test(links[i].href)) {
+        if (links[i].getAttribute('data-video-time') === null && urlRegex.test(links[i].href)) {
           const isLinkJump = links[i].classList.contains('jump-link');
           const isLinkJumpVideo = links[i].classList.contains('video-time') || links[i].classList.contains('video');
           if (!(isLinkJump && isLinkJumpVideo)) {
@@ -217,8 +221,9 @@
     }
     blockBLinkEvents();
     function deferredBlockBevents(delayTime) {
+      clearTimeout(timeoutID);
       timeoutID = setTimeout(() => {
-        cleanLinks(bilibiliParams); removeBiliAnnoyances(0); blockBLinkEvents(); clearTimeout(timeoutID);
+        cleanLinks(bilibiliParams); removeBiliAnnoyances(0); blockBLinkEvents();
       }, delayTime);
     }
     deferredBlockBevents(DELAY_TIME.fast);
@@ -240,19 +245,21 @@
     }
   }
   function deferredBlockBClickEvents(delayTime) {
-    restoreState(bilibiliParams);
-    timeoutID = setTimeout(() => { blockBClickEvents(); clearTimeout(timeoutID); }, delayTime);
+    restoreState(bilibiliParams); clearTimeout(timeoutID);
+    timeoutID = setTimeout(() => { blockBClickEvents(); }, delayTime);
   }
   // Loop execution when mouse moving
   function bilibiliListenMoving() {
-    let x = 0; let y = 0;
-    doc.onmousemove = (e) => {
-      if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
-        cleanLinks(bilibiliParams);
-        blockBClickEvents();
-        x = e.clientX; y = e.clientY;
-      }
-    };
+    doc.addEventListener('DOMContentLoaded', () => {
+      let x = 0; let y = 0;
+      document.onmousemove = (e) => {
+        if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
+          cleanLinks(bilibiliParams);
+          blockBClickEvents();
+          x = e.clientX; y = e.clientY;
+        }
+      };
+    });
   }
   // Loop execution when scrolling
   function biliListenScrolling() {
@@ -304,12 +311,14 @@
     // search input area
     const searchInputs = doc.getElementsByClassName('search-input-el');
     searchInputs[0].addEventListener('click', () => {
-      timeoutID = setTimeout(() => { blockSearchEvents(); clearTimeout(timeoutID); }, DELAY_TIME.fast);
+      clearTimeout(timeoutID);
+      timeoutID = setTimeout(() => { blockSearchEvents(); }, DELAY_TIME.fast);
     }, true);
     // clear icon
     const clearIcon = doc.getElementsByClassName('clear-icon')[0];
     clearIcon.addEventListener('click', () => {
-      timeoutID = setTimeout(() => { blockSearchEvents(); clearTimeout(timeoutID); }, DELAY_TIME.fast);
+      clearTimeout(timeoutID);
+      timeoutID = setTimeout(() => { blockSearchEvents(); }, DELAY_TIME.fast);
     }, true);
   }
   // search.bilibili.com/*
@@ -327,19 +336,24 @@
   }
   // www.bilibili.com/video/*
   function cleanBVideoURL() {
-    window.onload = () => {
-      console.log('329 cleanBVideoURL');
+    doc.addEventListener('DOMContentLoaded', () => {
+      console.log('cleanBVideoURL()');
       const unfoldVideo = doc.getElementsByClassName('rec-footer')[0];
       unfoldVideo.addEventListener('click', () => {
         deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
         deferredBlockBClickEvents(bilibiliParams, DELAY_TIME.fast);
       }, true);
-    };
+    });
   }
   // live.bilibili.com/*
   function cleanBLive(delayTime) {
     // live.bilibili.coom popups
     const livePopupBlock = (selection) => {
+      if (selection) {
+        doc.getElementById('anchor-guest-box-id').style.display = 'none';
+      } else {
+        doc.getElementById('anchor-guest-box-id').style.display = '';
+      }
       const iframes = doc.getElementsByTagName('iframe');
       for (let i = 0; i < iframes.length; i += 1) {
         if (iframes[i].src.includes('live-lottery')) {
@@ -369,10 +383,10 @@
         }, true);
       }
     }, delayTime);
-    intervalID = setInterval(livePopupBlock(BlockLivePopups), DELAY_TIME.normal);
+    intervalID = setInterval(livePopupBlock(BlockLivePopups), DELAY_TIME.normal * 2);
     timeoutID = setTimeout(() => {
       clearInterval(intervalID); clearTimeout(timeoutID);
-    }, DELAY_TIME.slow + 1000 * 300);
+    }, DELAY_TIME.slow + 3000 * 300);
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Baidu ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   // Baidu related search, Hot search URL cleaning
@@ -398,14 +412,14 @@
       }
     }
     function blockBDTrackingEvents() {
-      window.onload = () => {
+      doc.addEventListener('DOMContentLoaded', () => {
         const links = doc.getElementsByTagName('a');
         for (let i = 0; i < links.length; i += 1) {
           if (links[i].href !== '') {
             links[i].addEventListener('click', () => { cleanBDLinks(baiduParams); }, true);
           }
         }
-      };
+      });
     }
     cleanBDLinks(baiduParams);
     blockBDTrackingEvents();
@@ -454,7 +468,7 @@
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Youku ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanYouku() {
-    cleanLinks(youkuParams);
+    restoreState(youkuParams); cleanLinks(youkuParams);
     let x = 0; let y = 0;
     doc.onmousemove = (e) => {
       if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
@@ -479,30 +493,26 @@
       }
     };
   }
-  // Main execution
-  function mainExec() {
-    const CUR_HOST = window.location.hostname;
-    const CUR_URL = window.location.href;
-    const isBilibili = CUR_HOST.includes('bilibili.com') || CUR_HOST.includes('biligame.com');
-    const isBmain = CUR_HOST.includes('www.bilibili.com') || CUR_URL.includes('www.bilibili.com/index.html');
-    const isBvideo = CUR_URL.includes('www.bilibili.com/video');
-    const isBsearch = CUR_HOST.includes('search.bilibili.com');
-    const isBlive = CUR_HOST.includes('live.bilibili.com');
-    const isBaidu = CUR_HOST.includes('baidu.com');
-    const isDouyin = CUR_HOST.includes('douyin.com');
-    const isCSDN = CUR_HOST.includes('csdn.net');
-    const isAli = CUR_HOST.includes('alibaba.com') || CUR_HOST.includes('alibabagroup.com')
-               || CUR_HOST.includes('aliyun.com') || CUR_HOST.includes('alimama.com')
-               || CUR_HOST.includes('aliexpress.com') || CUR_HOST.includes('taobao.com')
-               || CUR_HOST.includes('tmall.com') || CUR_HOST.includes('tmall.hk')
-               || CUR_HOST.includes('1688.com');
+
+  (() => {
+    const isBilibili = pageHost.includes('bilibili.com') || pageHost.includes('biligame.com');
+    const isBmain = pageHost.includes('www.bilibili.com') || pageURL.includes('www.bilibili.com/index.html');
+    const isBvideo = pageURL.includes('www.bilibili.com/video');
+    const isBsearch = pageHost.includes('search.bilibili.com');
+    const isBlive = pageHost.includes('live.bilibili.com');
+    const isBaidu = pageHost.includes('baidu.com');
+    const isDouyin = pageHost.includes('douyin.com');
+    const isCSDN = pageHost.includes('csdn.net');
+    const aliRegex = /([\w.]{0,})(alibaba|alibabagroup|aliyun|alimama|aliexpress|taobao|tmall|1688).(com|hk|cn)/;
+    const isAli = aliRegex.test(pageHost);
+
     let siteParams; // For script menu
     switch (true) {
       case isBilibili:
+        siteParams = bilibiliParams;
         restoreState(bilibiliParams); cleanLinks(bilibiliParams); cleanBLTopMenu();
         removeBiliAnnoyances(0);
         blockBClickEvents(); biliListenScrolling();
-        siteParams = bilibiliParams;
         switch (isBilibili) {
           case isBmain:
             if (isBvideo) { cleanBVideoURL(); } else { bilibiliListenMoving(); }
@@ -525,7 +535,7 @@
       case isAli:
         siteParams = aliParams; cleanAliSites();
         break;
-      case CUR_HOST.includes('youku.com'):
+      case pageHost.includes('youku.com'):
         siteParams = youkuParams; cleanYouku();
         break;
       case isCSDN:
@@ -534,7 +544,12 @@
       case isDouyin:
         siteParams = douyinParams; restoreState(douyinParams);
         break;
-      default:
+      default: // additional params for certain sites
+        if (pageHost.includes('github.com')) { siteParams.push('ref_cta', 'ref_loc', 'ref_page'); }
+        if (pageHost.includes('medium.com')) { commonParams.push('source'); }
+        if (pageHost.includes('xda-developers.com')) {
+          commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign');
+        }
         siteParams = commonParams; commonClean();
         break;
     }
@@ -545,7 +560,7 @@
       case userLanguage === 'zh-CN' || userLanguage === 'zh-SG':
         MenuTitle = '手动清理链接';
         break;
-      case userLanguage === 'zh-TW':
+      case userLanguage === 'zh-TW' || userLanguage === 'zh-HK':
         MenuTitle = '手動清理連結';
         break;
       default: // English and others
@@ -554,20 +569,27 @@
     }
     // eslint-disable-next-line no-undef
     GM_registerMenuCommand(MenuTitle, () => { cleanLinks(siteParams); }, 'C');
-  }
-  mainExec();
+  })();
 })();
 
 /*
 # Changelog
+v0.5.7 2023.05
+- Optiomise the monitoring of certain events.
+- Remove more parameters for `github|medium|xda-developers|youku.(com)`.
+- Bug fixes.
+
+v0.5.6 2023.04.28  
+- Restore a necessary parameter for baidu.com.
+
 v0.5.5 2023.04.28  
-- Restore normall events withen the bili-live player under right-menu clicking.
+- Restore normall events within the bili-live player under right-menu clicking.
 - Fixed some coding errors and bug fixes.
 - Update script icon.
 - Add more tracking parameters.
 - Several optimisations, improve cleaning speed.
 
-v0.5.2 2023.04.20
+v0.5.2 2023.04.20  
 - Update site params (add, remove) (Duplicate or necessary parameters for certain sites).
 - Add a condition before bind a event-listenser to button tags.
 - Manually cleaning: Add a script menu on tampermonkey's drop-down menu during default situations.
