@@ -47,12 +47,13 @@
     'curator_clanid', 'snr', 'redir', // Steam
     'utm_source', 'utm_content', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_id', 'utm_sources', // google analytics
     'embeds_euri', 'source_ve_path', 'feature', 'spm_id_from', 'vd_source', // embedded video yt/bili
-    'refer_flag', 'mark_id', 'page_from'];
+    'refer_flag', 'mark_id', 'page_from', 'src'];
   // Tracking or other params for certain site
   const bilibiliParams = ['spm_id_from', 'spm_id', 'vd_source', 'from_spmid', 'csource',
     'sourceFrom', 'hotRank', 'live_from', 'from', 'launch_id', 'msource', 'popular_rank',
     'session_id', 'business', 'sort_field', 'broadcast_type', 'is_room_feed', 'dynamicspm_id_from',
-    'is_live_full_webview', 'is_live_webview', 'refer_from', 'vt', 'from_source', 'share_source'];
+    'is_live_full_webview', 'is_live_webview', 'refer_from', 'vt', 'from_source',
+    'share_source', 'share_plat', 'share_session_id', 'share_tag', 'timestamp', 'unique_k'];
   const baiduParams = ['rsv_idx', 'hisfilter', 'rsf', 'rsv_pq', 'rsv_t', 'qid', 'rsv_dl', // baidu
     'sa', 'rqid', 'oq', 'gpc', 'usm', 'tfflag', 'ie', 'bs', 'rqlang', 'tn', 'sc_us', 'wfr',
     'fenlei', 'platform',
@@ -148,9 +149,14 @@
     // additional params for certain sites
     if (pageHost.includes('github.com')) { commonParams.push('ref_cta', 'ref_loc', 'ref_page'); }
     if (pageHost.includes('medium.com')) { commonParams.push('source'); }
+    if (pageHost.includes('douban.com')) { commonParams.push('target_user_id'); }
     if (pageHost.includes('xda-developers.com')) {
       commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign');
     }
+    if (pageHost.includes('zhihu.com')) {
+      commonParams.push('search_source', 'hybrid_search_source', 'hybrid_search_extra');
+    }
+
     const params = commonParams;
     restoreState(params);
     window.onload = () => {
@@ -364,7 +370,7 @@
   }
   // live.bilibili.com/*
   function cleanBLive(delayTime) {
-    // live.bilibili.coom popups
+    // live.bilibili.com popups
     const livePopupBlock = (selection) => {
       if (selection) {
         doc.getElementById('anchor-guest-box-id').style.display = 'none';
@@ -579,7 +585,7 @@
     }
     window.onload = () => {
       // eslint-disable-next-line no-undef
-      GM_registerMenuCommand(MenuTitle, () => { cleanLinks(siteParams); }, 'C');
+      GM_registerMenuCommand(MenuTitle, () => { console.log(siteParams); cleanLinks(siteParams); }, 'C');
     };
   })();
 })();
@@ -589,7 +595,8 @@
 v0.5.8 2023.05.
 - Fix an issue where the script submenu on github.com was not displayed successfully.
 - Clean copy texts when share video on the video page of bilibili.
-- Clean more parameters for `douyin|tiktok.com`.
+- Clean more parameters for `douyin|tiktok|zhihu|douban|twitter.com`.
+- Block signin popups once when enter the pages of zhihu.com.
 
 v0.5.7 2023.05.05
 - Optiomise the monitoring of certain events.
