@@ -3,7 +3,7 @@
 // @name:en      Clean Tracking URLs
 // @name:zh-TW   跟蹤鏈接凈化
 // @namespace    https://greasyfork.org/en/scripts/456881
-// @version      0.5.7.1
+// @version      0.5.8
 // @description       净化所有网站的跟踪链接和事件
 // @description:en    Clean all tracking URLs, block tracking events on all websites
 // @description:zh-TW 凈化網際網路上的所有網站鏈接和事件
@@ -63,7 +63,9 @@
     'frwh', 'obj_id', 'fid', 'fname', '_t', 'topic_name', 'frs', 't', 'share_from',
     'tpl', 'u', 'tb_mod', 'tb_fr', 'share', 'sfc', 'client_version', 'unique', 'is_video', 'st',
     '_wkts_', 'ai', 'ck', 'shh']; // wenku
-  const douyinParams = ['rsv_idx', 'hisfilter', 'source', 'aid', 'enter_from', 'focus_method', 'gid'];
+  const douyinParams = ['rsv_idx', 'hisfilter', 'source', 'aid', 'enter_from', 'focus_method', 'gid', // douyin
+    'previous_page', 'extra_params',
+    'is_from_webapp', 'sender_device', 'web_id']; // tiktok
   const csdnParams = ['spm', 'source', 'utm_source', 'ops_request_misc', 'request_id', 'biz_id', 'from_wecom',
     'utm_medium', 'utm_term', 'utm_medium', 'utm_campaign'];
   const youkuParams = ['spm', 'scm', 'from', 's', 'playMode', 'client_id'];
@@ -92,7 +94,6 @@
     const links = doc.getElementsByTagName('a');
     for (let i = 0; i < links.length; i += 1) {
       if (urlRegex.test(links[i].href)) {
-        // console.log(links[i].hostname);
         const url = new URL(links[i].href);
         const params = url.searchParams;
         siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
@@ -150,14 +151,15 @@
     if (pageHost.includes('xda-developers.com')) {
       commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign');
     }
-    restoreState(commonParams);
+    const params = commonParams;
+    restoreState(params);
     window.onload = () => {
-      cleanLinks(commonParams);
+      cleanLinks(params);
       const divs = doc.getElementsByTagName('div');
       for (let i = 0; i < divs.length; i += 1) {
         if (divs[i].className !== '') {
           divs[i].addEventListener('click', () => {
-            deferredCleanLinks(commonParams, DELAY_TIME.fast);
+            deferredCleanLinks(params, DELAY_TIME.fast);
           }, true);
         }
       }
@@ -165,19 +167,20 @@
       for (let i = 0; i < btns.length; i += 1) {
         if (btns[i].className !== '') {
           btns[i].addEventListener('click', () => {
-            deferredCleanLinks(commonParams, DELAY_TIME.fast);
+            deferredCleanLinks(params, DELAY_TIME.fast);
           }, true);
         }
       }
     };
-    deferredCleanLinks(commonParams, DELAY_TIME.slow - 400);
+    deferredCleanLinks(params, DELAY_TIME.slow - 400);
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
       if (scrolls - topScroll > 150) { // executiing until scrolling to the bottom of the page
-        cleanLinks(commonParams);
+        cleanLinks(params);
         topScroll = scrolls;
       }
     };
+    return params;
   }
 
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Bilibili ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
@@ -348,6 +351,15 @@
         deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
         deferredBlockBClickEvents(bilibiliParams, DELAY_TIME.fast);
       }, true);
+      // Clean copying url (share copy)
+      doc.getElementById('arc_toolbar_report').addEventListener('mousemove', () => {
+        doc.getElementById('share-btn-outer').addEventListener('click', (event) => {
+          event.stopPropagation(); navigator.clipboard.writeText(`${doc.title}  ${pageURL}`);
+        });
+        doc.getElementById('share-btn-inner').addEventListener('click', (event) => {
+          event.stopPropagation(); navigator.clipboard.writeText(pageURL);
+        });
+      });
     });
   }
   // live.bilibili.com/*
@@ -472,15 +484,15 @@
     };
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Youku ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
-  function cleanYouku() {
-    restoreState(youkuParams); cleanLinks(youkuParams);
+  function cleanYoukuDouyin(siteParams) {
+    restoreState(siteParams); cleanLinks(siteParams);
     let x = 0; let y = 0;
-    doc.onmousemove = (e) => {
+    doc.addEventListener('mousemove', (e) => {
       if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
-        cleanLinks(baiduParams);
+        cleanLinks(siteParams);
         x = e.clientX; y = e.clientY;
       }
-    };
+    });
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Ali Sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanAliSites() {
@@ -520,7 +532,6 @@
     const isBsearch = pageHost.includes('search.bilibili.com');
     const isBlive = pageHost.includes('live.bilibili.com');
     const isBaidu = pageHost.includes('baidu.com');
-    const isDouyin = pageHost.includes('douyin.com');
     const isCSDN = pageHost.includes('csdn.net');
     const aliRegex = /([\w.]{0,})(alibaba|alibabagroup|aliyun|alimama|aliexpress|taobao|tmall|1688).(com|hk|cn)/;
     const isAli = aliRegex.test(pageHost);
@@ -553,17 +564,17 @@
       case isAli:
         siteParams = aliParams; cleanAliSites();
         break;
-      case pageHost.includes('youku.com'):
-        siteParams = youkuParams; cleanYouku();
-        break;
       case isCSDN:
         siteParams = csdnParams; cleanCSDN();
         break;
-      case isDouyin:
-        siteParams = douyinParams; restoreState(douyinParams);
+      case pageHost.includes('youku.com'):
+        siteParams = youkuParams; cleanYoukuDouyin(youkuParams);
+        break;
+      case /www.(tiktok|douyin).com/.test(pageHost):
+        siteParams = douyinParams; cleanYoukuDouyin(douyinParams);
         break;
       default:
-        siteParams = commonParams; commonClean();
+        siteParams = commonClean();
         break;
     }
     window.onload = () => {
@@ -575,8 +586,10 @@
 
 /*
 # Changelog
-v0.5.7.1 2023.05
+v0.5.8 2023.05.
 - Fix an issue where the script submenu on github.com was not displayed successfully.
+- Clean copy texts when share video on the video page of bilibili.
+- Clean more parameters for `douyin|tiktok.com`.
 
 v0.5.7 2023.05.05
 - Optiomise the monitoring of certain events.
