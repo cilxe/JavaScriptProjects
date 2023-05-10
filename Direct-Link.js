@@ -2,7 +2,7 @@
 // @name         Direct Link
 // @name:zh-CN   重定向链接转直链
 // @namespace    https://greasyfork.org/en/scripts/463408/
-// @version      0.1.6
+// @version      0.1.6.1
 // @description  Replace the redirect links with direct links
 // @description:zh-CN  将页面内所有重定向式的链接替换为直链
 // @author       cilxe
@@ -32,11 +32,11 @@
 - **Replace the redirect links with direct links**
 
 ## Currently supported sites
-- juejin.cn
 - youtube.com
 - epicgames.com
 - mozilla.org / firefox.com (adjust.com)
 - hoyolab.com (adjust.com)
+- juejin.cn
 - leetcode.cn
 - oschina.net
 - gitee.com
@@ -62,7 +62,7 @@ you can submit feedback [here](https://greasyfork.org/scripts/463408-direct-link
   const INDEX_GOTOPAGE = ['goto_page', 'url']; // oschina
   const INDEX_SHOPLINK = ['url']; // shop-links.co
   // eslint-disable-next-line max-len
-  const linkRegex = /([\w.]{0,})(jianshu|juejin|youtube|leetcode|oschina|gitee|sspai|gcores|zhihu|epicgames|adjust|shop-links|landiannews).(com|cn|org|net|co)/;
+  const linkRegex = /([\w.]{0,})(jianshu|juejin|youtube|leetcode|oschina|gitee|sspai|gcores|zhihu|epicgames|adjust|shop-links).(com|cn|org|net|co)/;
   const pageHost = window.location.hostname;
   const doc = document;
   // Replace with direct url
@@ -85,6 +85,7 @@ you can submit feedback [here](https://greasyfork.org/scripts/463408-direct-link
   }
   // Youtube additional steps
   function youtubeDirect() {
+    linkDirect(INDEX_YOUTUBE_Q);
     function run() {
       clearTimeout(timeoutID);
       timeoutID = setTimeout(() => {
@@ -99,10 +100,7 @@ you can submit feedback [here](https://greasyfork.org/scripts/463408-direct-link
         doc.getElementById('description-inner').onmousemove = () => { linkDirect(INDEX_YOUTUBE_Q, 0); };
       }, DELAY_TIME.normal + 600);
     }
-    doc.addEventListener('DOMContentLoaded', () => {
-      run(); if (doc.visibilityState === 'visible') { run(); }
-      doc.onvisibilitychange = () => { run(); };
-    });
+    doc.addEventListener('DOMContentLoaded', () => { run(); doc.onvisibilitychange = () => { run(); }; });
   }
 
   (() => {
@@ -114,7 +112,7 @@ you can submit feedback [here](https://greasyfork.org/scripts/463408-direct-link
       case userLanguage === 'zh-CN' || userLanguage === 'zh-SG':
         MenuTitle = '手动重新替换';
         break;
-      case userLanguage === 'zh-TW':
+      case userLanguage === 'zh-TW' || userLanguage === 'zh-HK':
         MenuTitle = '手動再次替換';
         break;
       default: // English and others
@@ -156,7 +154,7 @@ you can submit feedback [here](https://greasyfork.org/scripts/463408-direct-link
         break;
     }
     // eslint-disable-next-line no-undef
-    GM_registerMenuCommand(MenuTitle, () => { linkFromServer(); linkDirect(indexParam, 0); }, 'D');
+    GM_registerMenuCommand(MenuTitle, () => { linkDirect(indexParam, 0); }, 'D');
     // executiing until scrolling to the bottom of the page
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || document.body.scrollTop;
@@ -166,6 +164,9 @@ you can submit feedback [here](https://greasyfork.org/scripts/463408-direct-link
 })();
 
 /*
+v0.1.6.1 2023.05.10
+- Fix an issue where has an undefined function, which may cause some functions to fail to execute.
+
 v0.1.6 2023.05.10
 - Add support for sspai|gcores|zhihu.com (target).
 - Add another redirecting index param for oschina.net.
