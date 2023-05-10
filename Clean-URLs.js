@@ -28,11 +28,12 @@
   - alibaba.com/aliyun.com/alibabagroup.com/alimama.com
   - taobao.com/tmall.com/tmall.hk/1688.com/aliexpress.com
   - youku.com
+- Douyin/Tiktok.com
 */
 
 (() => {
   const DELAY_TIME = { fast: 600, normal: 1000, slow: 3000 };
-  const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
+  const linkRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
   let timeoutID;
   let intervalID;
   let topScroll = 0;
@@ -56,12 +57,12 @@
     'share_source', 'share_plat', 'share_session_id', 'share_tag', 'timestamp', 'unique_k'];
   const baiduParams = ['rsv_idx', 'hisfilter', 'rsf', 'rsv_pq', 'rsv_t', 'qid', 'rsv_dl', // baidu
     'sa', 'rqid', 'oq', 'gpc', 'usm', 'tfflag', 'ie', 'bs', 'rqlang', 'tn', 'sc_us', 'wfr',
-    'fenlei', 'platform',
+    'fenlei', 'platform', 'base_query',
     'for', 'from', 'topic_pn', 'rsp', 'rs_src', 'f', 'rsv_page', 'dyTabStr', 'ct', 'utm_content',
     'lm', 'site', 'sites', 'fr', 'cl', 'bsst', 'lid', 'rsv_spt', 'rsv_bp', 'src', 'sfrom',
     'utm_source', 'utm_medium', 'refer', 'zp_fr', 'channel', 'p_from', 'n_type', 'eqid',
     'uname', 'uid', 'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', // tieba
-    'frwh', 'obj_id', 'fid', 'fname', '_t', 'topic_name', 'frs', 't', 'share_from',
+    'frwh', 'obj_id', 'fid', 'fname', '_t', 'topic_name', 'frs', 't', 'share_from', 'idfrom',
     'tpl', 'u', 'tb_mod', 'tb_fr', 'share', 'sfc', 'client_version', 'unique', 'is_video', 'st',
     '_wkts_', 'ai', 'ck', 'shh']; // wenku
   const douyinParams = ['rsv_idx', 'hisfilter', 'source', 'aid', 'enter_from', 'focus_method', 'gid', // douyin
@@ -71,62 +72,60 @@
     'utm_medium', 'utm_term', 'utm_medium', 'utm_campaign'];
   const youkuParams = ['spm', 'scm', 'from', 's', 'playMode', 'client_id'];
   const aliParams = [
-    // ali
-    'spm', 'utm_content', 'lwfrom', 'from', 'scene',
+    'spm', 'utm_content', 'lwfrom', 'from', 'scene', // ali
     // taobao.com/tmall.com/1688.com/tmall.hk
     'stats_click', 'initiative_id', 'wh_pid', 'wh_random_str', 'source', 'suggest',
     'suggest_query', 'scm', 'pvid', 'topOfferIds', 'search_condition', 'industryCatId',
   ];
   //  Restore history state, remove redundant params (Common)
   function restoreState(siteParams) {
-    const OLD_URL = window.location.href;
-    const url = new URL(OLD_URL);
+    const url = new URL(pageURL);
     const params = url.searchParams;
     siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
 
     // With regualr expression, matches all tracking param-names which contains: utm / spm / from
     // const paramsRegex = /^(utm|spm|from)/i;
     // Array.from(params.keys()).forEach((k) => { if (paramsRegex.test(k)) { params.delete(k); } });
-    if (url.href !== OLD_URL) { window.history.replaceState({}, 'Restore', url.href); }
+    if (url.href !== pageURL) { window.history.replaceState({}, 'Restore', url.href); }
   }
-
   // Clean <a> links (Common)
   function cleanLinks(siteParams) {
     const links = doc.getElementsByTagName('a');
     for (let i = 0; i < links.length; i += 1) {
-      if (urlRegex.test(links[i].href)) {
+      if (linkRegex.test(links[i].href)) {
         const url = new URL(links[i].href);
         const params = url.searchParams;
-        siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
         //  ============== Specified site actions ==============
         //  1. Ali sites
-        if (siteParams === aliParams) { params.set('q', links[i].innerText); }
+        if (/([\w.]{0,})(taobao|tmall).com/.test(pageHost)) { params.set('q', links[i].innerText); }
         //  2. Tieba.baidu.com
-        if (siteParams === baiduParams && links[i].innerText === '应用中心') {
+        if (/([\w.]{0,})(baidu).com/.test(pageHost) && links[i].innerText === '应用中心') {
           params.set('kw', links[i].innerText);
         }
-        if (links[i].href !== url.href) { links[i].href = url.href; }
-      }
-      //  3. Bilibili 
-      if (siteParams === bilibiliParams) {
+        //  3. Bilibili 
+        if (siteParams === bilibiliParams) {
         // Remove Bilibili Card Ads
-        if (links[i].hostname.includes('cm.bilibili.com')) { links[i].remove(); }
-        // Clean <a> link data-url on bilibili.com/video
-        const dataLink = links[i].getAttribute('data-url');
-        if (dataLink !== null) {
-          if (dataLink.includes('bilibili.com') && dataLink.startsWith('//')) {
-            const url = new URL(`https:${dataLink}`);
-            const params = url.searchParams;
-            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            links[i].setAttribute('data-url', url.href);
+          if (links[i].hostname.includes('cm.bilibili.com')) { links[i].remove(); }
+          // Clean <a> link data-url on bilibili.com/video
+          const dataLink = links[i].getAttribute('data-url');
+          if (dataLink !== null) {
+            if (dataLink.includes('bilibili.com') && dataLink.startsWith('//')) {
+              const dlURL = new URL(`https:${dataLink}`);
+              const dlParams = dlURL.searchParams;
+              siteParams.forEach((k) => { if (dlParams.has(k)) { dlParams.delete(k); } });
+              links[i].setAttribute('data-url', url.href);
+            }
           }
         }
+        siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
+        if (links[i].href !== url.href) { links[i].href = url.href; }
       }
     }
   }
   function deferredCleanLinks(siteParams, delayTime) {
+    clearTimeout(timeoutID);
     timeoutID = setTimeout(() => {
-      restoreState(siteParams); cleanLinks(siteParams); clearTimeout(timeoutID);
+      restoreState(siteParams); cleanLinks(siteParams);
     }, delayTime);
   }
 
@@ -135,7 +134,7 @@
     timeoutID = setTimeout(() => {
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
-        if (urlRegex.test(links[i].href)) {
+        if (linkRegex.test(links[i].href)) {
           links[i].addEventListener('mousedown', (e) => { e.stopPropagation(); }, true);
           links[i].addEventListener('click', (e) => { e.stopPropagation(); }, true);
         }
@@ -151,21 +150,32 @@
     if (pageHost.includes('medium.com')) { commonParams.push('source'); }
     if (pageHost.includes('douban.com')) { commonParams.push('target_user_id'); }
     if (pageHost.includes('xda-developers.com')) {
-      commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign');
+      commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign', 'u', 'url', 'newsletter_popup');
     }
     if (pageHost.includes('zhihu.com')) {
       commonParams.push('search_source', 'hybrid_search_source', 'hybrid_search_extra');
     }
-
+    const hoyoRegex = /([\w.]{0,})(hoyolab|hoyoverse|mihoyo|miyoushe|mihoyogift).com/;
+    if (hoyoRegex.test(pageHost)) {
+      commonParams.push(
+        'hyl_auth_required',
+        'hyl_presentation_style',
+        'bbs_theme',
+        'bbs_theme_device',
+        'bbs_presentation_style',
+        'mhy_presentation_style',
+      );
+    }
+    if (pageHost.includes('cctv.com')) { commonParams.push('toc_style_id', 'share_to', 'track_id'); }
     const params = commonParams;
     restoreState(params);
-    window.onload = () => {
+    doc.addEventListener('DOMContentLoaded', () => {
       cleanLinks(params);
       const divs = doc.getElementsByTagName('div');
       for (let i = 0; i < divs.length; i += 1) {
         if (divs[i].className !== '') {
           divs[i].addEventListener('click', () => {
-            deferredCleanLinks(params, DELAY_TIME.fast);
+            deferredCleanLinks(params, DELAY_TIME.normal);
           }, true);
         }
       }
@@ -173,11 +183,11 @@
       for (let i = 0; i < btns.length; i += 1) {
         if (btns[i].className !== '') {
           btns[i].addEventListener('click', () => {
-            deferredCleanLinks(params, DELAY_TIME.fast);
+            deferredCleanLinks(params, DELAY_TIME.normal);
           }, true);
         }
       }
-    };
+    });
     deferredCleanLinks(params, DELAY_TIME.slow - 400);
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
@@ -224,7 +234,7 @@
     function blockBLinkEvents() {
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
-        if (links[i].getAttribute('data-video-time') === null && urlRegex.test(links[i].href)) {
+        if (links[i].getAttribute('data-video-time') === null && linkRegex.test(links[i].href)) {
           const isLinkJump = links[i].classList.contains('jump-link');
           const isLinkJumpVideo = links[i].classList.contains('video-time') || links[i].classList.contains('video');
           if (!(isLinkJump && isLinkJumpVideo)) {
@@ -350,8 +360,8 @@
   }
   // www.bilibili.com/video/*
   function cleanBVideoURL() {
+    cleanLinks(bilibiliParams);
     doc.addEventListener('DOMContentLoaded', () => {
-      console.log('cleanBVideoURL()');
       const unfoldVideo = doc.getElementsByClassName('rec-footer')[0];
       unfoldVideo.addEventListener('click', () => {
         deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
@@ -414,12 +424,13 @@
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Baidu ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   // Baidu related search, Hot search URL cleaning
   function cleanBaidu() {
+    if (pageHost.includes('news.baidu.com')) { baiduParams.push('toc_style_id', 'share_to', 'track_id'); }
     restoreState(baiduParams);
     function cleanBDLinks(siteParams) {
       cleanLinks(baiduParams);
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
-        if (links[i].href !== '') {
+        if (linkRegex.test(links[i].href)) {
           if (links[i].hostname.includes('zhidao.baidu.com') && links[i].pathname === '/q') {
             links[i].pathname = '/search';
           }
@@ -534,13 +545,7 @@
     }
     const isBilibili = pageHost.includes('bilibili.com') || pageHost.includes('biligame.com');
     const isBmain = pageHost.includes('www.bilibili.com') || pageURL.includes('www.bilibili.com/index.html');
-    const isBvideo = pageURL.includes('www.bilibili.com/video');
-    const isBsearch = pageHost.includes('search.bilibili.com');
-    const isBlive = pageHost.includes('live.bilibili.com');
-    const isBaidu = pageHost.includes('baidu.com');
-    const isCSDN = pageHost.includes('csdn.net');
     const aliRegex = /([\w.]{0,})(alibaba|alibabagroup|aliyun|alimama|aliexpress|taobao|tmall|1688).(com|hk|cn)/;
-    const isAli = aliRegex.test(pageHost);
     let siteParams; // For script menu
     switch (true) {
       case isBilibili:
@@ -550,12 +555,12 @@
         blockBClickEvents(); biliListenScrolling();
         switch (isBilibili) {
           case isBmain:
-            if (isBvideo) { cleanBVideoURL(); } else { bilibiliListenMoving(); }
+            if (pageURL.includes('www.bilibili.com/video')) { cleanBVideoURL(); } else { bilibiliListenMoving(); }
             break;
-          case isBsearch:
+          case pageHost.includes('search.bilibili.com'):
             cleanBSearch(); bilibiliListenMoving();
             break;
-          case isBlive:
+          case pageHost.includes('live.bilibili.com'):
             cleanBLive(DELAY_TIME.normal);
             break;
           default: // space passport account message member t app manga show link biligame
@@ -564,19 +569,19 @@
         }
         doc.addEventListener('DOMContentLoaded', () => { removeBiliMetadData(); });
         break;
-      case isBaidu:
+      case pageHost.includes('baidu.com'):
         siteParams = baiduParams; cleanBaidu();
         break;
-      case isAli:
+      case aliRegex.test(pageHost):
         siteParams = aliParams; cleanAliSites();
         break;
-      case isCSDN:
+      case pageHost.includes('csdn.net'):
         siteParams = csdnParams; cleanCSDN();
         break;
       case pageHost.includes('youku.com'):
         siteParams = youkuParams; cleanYoukuDouyin(youkuParams);
         break;
-      case /www.(tiktok|douyin).com/.test(pageHost):
+      case /([\w.]{0,})(tiktok|douyin).com/.test(pageHost):
         siteParams = douyinParams; cleanYoukuDouyin(douyinParams);
         break;
       default:
@@ -585,18 +590,20 @@
     }
     window.onload = () => {
       // eslint-disable-next-line no-undef
-      GM_registerMenuCommand(MenuTitle, () => { console.log(siteParams); cleanLinks(siteParams); }, 'C');
+      GM_registerMenuCommand(MenuTitle, () => { cleanLinks(siteParams); }, 'C');
     };
   })();
 })();
 
 /*
 # Changelog
-v0.5.8 2023.05.
+v0.5.8 2023.05.10
 - Fix an issue where the script submenu on github.com was not displayed successfully.
 - Clean copy texts when share video on the video page of bilibili.
-- Clean more parameters for `douyin|tiktok|zhihu|douban|twitter.com`.
+- Clean more parameters for `douyin|tiktok|zhihu|douban|twitter|xda-developers|baidu|cctv.com`.
 - Block signin popups once when enter the pages of zhihu.com.
+- Remove more params for `hoyolab|hoyoverse|mihoyo|miyoushe|miyougift.com` with futnion-commonClean.
+- Timeuout logic optimisation.
 
 v0.5.7 2023.05.05
 - Optiomise the monitoring of certain events.
