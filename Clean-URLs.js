@@ -3,7 +3,7 @@
 // @name:en      Clean Tracking URLs
 // @name:zh-TW   跟蹤鏈接凈化
 // @namespace    https://greasyfork.org/en/scripts/456881
-// @version      0.6.0
+// @version      0.6.1
 // @description       净化所有网站的跟踪链接和事件
 // @description:en    Clean all tracking URLs, block tracking events on all websites
 // @description:zh-TW 凈化網際網路上的所有網站鏈接和事件
@@ -44,7 +44,7 @@
   // Common tracking params for all sites
   const commonParams = [
     'utm_source', 'utm_content', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_id', 'utm_sources', // google analytics
-    'spm', 'from', 'mkt', 'refer_flag', 'page_from', 'src', 'ref_',
+    'spm', 'mkt', 'from', 'page_from', 'src', 'refer_flag', 'ref_', 'ref', 'response_type',
     'curator_clanid', 'snr', 'redir', // Steam
   ];
   // Tracking or other params for certain sites
@@ -68,7 +68,7 @@
   const douyinParams = ['rsv_idx', 'hisfilter', 'source', 'aid', 'enter_from', 'focus_method', 'gid', // douyin
     'previous_page', 'extra_params',
     'is_from_webapp', 'sender_device', 'web_id']; // tiktok
-  const csdnParams = commonParams.push('source', 'ops_request_misc', 'request_id', 'biz_id', 'from_wecom');
+  const csdnParams = commonParams.concat(['source', 'ops_request_misc', 'request_id', 'biz_id', 'from_wecom']);
   const youkuParams = ['spm', 'scm', 'from', 's', 'playMode', 'client_id'];
   const aliParams = [ // ali
     'spm', 'lwfrom', 'from', 'scene', 'utm_content', 'utm_term', 'utm_source', 'utm_campaign', 'utm_medium', 'utm_id',
@@ -76,16 +76,31 @@
     'scm', 'stats_click', 'initiative_id', 'wh_pid', 'wh_random_str', 'source', 'suggest',
     'suggest_query', 'pvid', 'topOfferIds', 'search_condition', 'industryCatId',
   ];
+  // Overwrite history events, Listen pushState, replaceState event
+  (() => {
+    const originPushState = window.history.pushState;
+    const originReplaceState = window.history.replaceState;
+    window.history.pushState = function pushState(...args) {
+      window.dispatchEvent(new Event('pushstate'));
+      window.dispatchEvent(new Event('urlchange'));
+      return originPushState.apply(this, args);
+    };
+    window.history.replaceState = function replaceState(...args) {
+      window.dispatchEvent(new Event('replacestate'));
+      window.dispatchEvent(new Event('urlchange'));
+      return originReplaceState.apply(this, args);
+    };
+  })();
   //  Restore history state, remove redundant params (Common)
   function restoreState(siteParams) {
-    const url = new URL(pageURL);
+    const url = new URL(window.location.href);
     const params = url.searchParams;
     siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
 
     // With regualr expression, matches all tracking param-names which contains: utm / spm / from
     // const paramsRegex = /^(utm|spm|from)/i;
     // Array.from(params.keys()).forEach((k) => { if (paramsRegex.test(k)) { params.delete(k); } });
-    if (url.href !== pageURL) { window.history.replaceState({}, 'Restore', url.href); }
+    if (url.href !== window.location.href) { window.history.replaceState({}, 'Restore', url.href); }
   }
   // Clean <a> links (Common)
   function cleanLinks(siteParams) {
@@ -94,9 +109,9 @@
       if (hostRegex.test(links[i].hostname)) {
         const url = new URL(links[i].href);
         const params = url.searchParams;
-        //  ============== Specified site actions ==============
+        //  ============== Specified site actions (About to Change) ==============
         //  1. Ali sites
-        if (/([a-z0-9-.]{0,128})(taobao|tmall).com$/.test(pageHost)) { params.set('q', links[i].innerText); }
+        if (/([a-z0-9-.]{0,128})(taobao|tmall).com$/.test(pageHost)) { params.set('q', links[i].innerText); } else
         //  2. Tieba.baidu.com
         if (/([a-z0-9-.]{0,128})(baidu).com$/.test(pageHost) && links[i].innerText === '应用中心') {
           params.set('kw', links[i].innerText);
@@ -118,14 +133,14 @@
             links[i].setAttribute('data-url', dlURL.href);
           }
         }
+      } else if (links[i].hostname.includes('amazon.')) { // 4. Amazon
+        links[i].pathname = links[i].pathname.substring(links[i].pathname.indexOf('/ref'), 1);
       }
     }
   }
   function deferredCleanLinks(siteParams, delayTime) {
     clearTimeout(timeoutID);
-    timeoutID = setTimeout(() => {
-      restoreState(siteParams); cleanLinks(siteParams);
-    }, delayTime);
+    timeoutID = setTimeout(() => { restoreState(siteParams); cleanLinks(siteParams); }, delayTime);
   }
 
   // Block clicking events (Common)
@@ -155,6 +170,9 @@
       case pageHost.includes('microsoft.com'):
         commonParams.push('response_mode');
         break;
+      case /([a-z0-9-.]{0,128})(amazon).(com|cn|co.uk|co.jp|fr|de|ca|au|ae|tr|sg|es)$/.test(pageHost):
+
+        break;
       case pageHost.includes('zhihu.com'):
         commonParams.push('search_source', 'hybrid_search_source', 'hybrid_search_extra');
         break;
@@ -165,11 +183,14 @@
         commonParams.push('mark_id', 'entry', '_rand', 'sudaref', 'refer', 'band_rank', 'gid', 'ua');
         break;
       case pageHost.includes('vk.com'):
-        commonParams.push('response_type', 'scheme', 'initial_stats_info');
+        commonParams.push('scheme', 'initial_stats_info');
+        break;
+      case pageHost.includes('stackoverflow.com'):
+        commonParams.push('so_medium', 'so_source');
         break;
       case /([a-z0-9-.]{0,128})(hoyolab|hoyoverse|mihoyo|miyoushe|mihoyogift).com$/.test(pageHost):
         // eslint-disable-next-line max-len
-        commonParams.push('hyl_auth_required', 'hyl_presentation_style', 'bbs_theme', 'bbs_theme_device', 'bbs_presentation_style', 'mhy_presentation_style', 'hyl_hide_status_bar', 'hyl_landscape', 'device_type', 'game_version', 'plat_type');
+        commonParams.push('hyl_auth_required', 'hyl_presentation_style', 'bbs_theme', 'bbs_theme_device', 'bbs_presentation_style', 'mhy_presentation_style', 'hyl_hide_status_bar', 'hyl_landscape', 'device_type', 'game_version', 'plat_type', 'visit_device');
         break;
       case pageHost.includes('douban.com'):
         commonParams.push('target_user_id', 'from_', 'dcs', 'dcm', 'dt_time_source', 'source', 'channel');
@@ -184,12 +205,13 @@
         commonParams.push('toc_style_id', 'share_to', 'track_id');
         break;
       case pageHost.includes('imdb.com'):
-        commonParams.push('rf', 'ref', 'imdbPageAction');
+        commonParams.push('rf', 'imdbPageAction');
         break;
       default: break;
     }
     const params = commonParams;
     restoreState(params);
+    window.addEventListener('urlchange', () => { restoreState(commonParams); });
     doc.addEventListener('DOMContentLoaded', () => {
       cleanLinks(params);
       const divs = doc.getElementsByTagName('div');
@@ -276,7 +298,7 @@
     }
     const lines = doc.getElementsByTagName('li');
     for (let i = 0; i < lines.length; i += 1) {
-      if (lines[i].className !== '' || !lines[i].className.includes('context-sub-menu-item')) {
+      if (lines[i].className !== '' && !lines[i].className.includes('context-sub-menu-item')) {
         lines[i].addEventListener('click', () => { deferredBlockBevents(DELAY_TIME.fast); }, true);
       }
     }
@@ -304,10 +326,7 @@
       // Current position
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
       if (scrolls - topScroll > 150) {
-        restoreState(bilibiliParams);
-        cleanLinks(bilibiliParams);
-        removeBiliAnnoyances(0);
-        blockBClickEvents();
+        restoreState(bilibiliParams); cleanLinks(bilibiliParams); removeBiliAnnoyances(0); blockBClickEvents();
         topScroll = scrolls;
       }
     };
@@ -412,17 +431,11 @@
       const iframes = doc.getElementsByTagName('iframe');
       for (let i = 0; i < iframes.length; i += 1) {
         if (iframes[i].src.includes('live-lottery')) {
-        // iframes[i].style.visibility = 'hidden';
-        // iframes[i].style.opacity = 0;
-        // iframes[i].style.display = 'none';
-          if (selection) {
-            iframes[i].style.visibility = 'hidden';
-          } else {
-            iframes[i].style.visibility = '';
-          }
+          if (selection) { iframes[i].style.visibility = 'hidden'; } else { iframes[i].style.visibility = ''; }
         }
       }
     };
+    clearTimeout(timeoutID);
     timeoutID = setTimeout(() => {
       const navis = doc.getElementsByClassName('tabs__tag-item'); // cat
       for (let i = 0; i < navis.length; i += 1) {
@@ -496,8 +509,7 @@
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ CSDN ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanCSDN() {
-    restoreState(csdnParams);
-    cleanLinks(csdnParams);
+    restoreState(csdnParams); cleanLinks(csdnParams);
     // CSDN.net tracking events
     function blockCSDNEvents() {
       const links = doc.getElementsByTagName('a');
@@ -540,14 +552,14 @@
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
       if (scrolls - topScroll > 150) {
-        cleanLinks(aliParams);
-        blockClickEvents();
+        cleanLinks(aliParams); blockClickEvents();
         topScroll = scrolls;
       }
     };
+    doc.addEventListener('mousemove', (e) => { if (e.clientY < 120) { cleanLinks(aliParams); blockClickEvents(); } });
   }
   (() => {
-    // Menu language (May not properly changed due to browser settings)
+    // Menu language (May not properly change due to browser settings)
     const userLanguage = navigator.language;
     let MenuTitle;
     switch (true) {
@@ -562,17 +574,14 @@
         break;
     }
     const isBilibili = pageHost.includes('bilibili.com') || pageHost.includes('biligame.com');
-    const isBmain = pageHost.includes('www.bilibili.com') || pageURL.includes('www.bilibili.com/index.html');
     const aliRegex = /([a-z0-9-.]{0,128})(alibaba|alibabagroup|aliyun|alimama|aliexpress|taobao|tmall|1688)\.(com|hk|cn)$/;
     let siteParams; // For script menu
     switch (true) {
       case isBilibili:
-        siteParams = bilibiliParams;
-        restoreState(bilibiliParams); cleanLinks(bilibiliParams); cleanBLTopMenu();
-        removeBiliAnnoyances(0);
-        blockBClickEvents(); biliListenScrolling();
+        siteParams = bilibiliParams; restoreState(bilibiliParams); cleanLinks(bilibiliParams);
+        cleanBLTopMenu(); removeBiliAnnoyances(0); blockBClickEvents(); biliListenScrolling();
         switch (true) {
-          case isBmain:
+          case pageHost.includes('www.bilibili.com'):
             if (pageURL.includes('www.bilibili.com/video')) { cleanBVideoURL(); } else { bilibiliListenMoving(); }
             break;
           case pageHost.includes('search.bilibili.com'):
@@ -613,12 +622,16 @@
 
 /*
 # Changelog
+v0.6.1 beta 1
+- Fix an error about array merging, from Array.push() to Array.concat().
+- Clean more params for common sites and `Amazon`, `weibo|stackoverflow.com`.
+
 v0.6.0 2023.05.15  
 - Clean more parameters for `(douban|imdb|vk|weibo|163|126|baidu.com)|yeah.net`.
 - Resote some parameters for `xda-developers.com`.
 - Add a function of copy cleaning precise time on the video pages of `bilibili`.
 - Clean up copy link behavior on context menu.
-- Bug fixes and script code and regexps matching optimisation.
+- Script code and regexps matching optimisation, fix several bugs.
 
 v0.5.8 2023.05.10  
 - Fix an issue where the script submenu on github.com was not displayed successfully.
