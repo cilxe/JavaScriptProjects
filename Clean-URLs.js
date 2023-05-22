@@ -609,16 +609,16 @@
     let MenuClean; let MenuAddParams; let InputTitle; let invalidFormat; let MenuRemoveParam; let noParam;
     switch (navigator.language) {
       case 'zh-CN' || 'zh-SG':
-        MenuClean = '手动清理链接'; MenuAddParams = '添加自定义参数'; InputTitle = '请输入要添加的单个自定义参数（仅字母与下划线）';
+        MenuClean = '手动清理链接'; MenuAddParams = '添加自定义参数'; InputTitle = '请输入要添加的单个自定义参数\n（仅支持字母，下划线與方括号）';
         invalidFormat = '无效的参数格式 '; MenuRemoveParam = '移除一个手动添加的参数（页面刷新后生效）'; noParam = '无此参数';
         break;
       case 'zh-TW' || 'zh-HK':
-        MenuClean = '手動清理連結'; MenuAddParams = '添加自定義參數'; InputTitle = '請輸入要添加的单个自定義參數（僅字母與下劃綫）';
+        MenuClean = '手動清理連結'; MenuAddParams = '添加自定義參數'; InputTitle = '請輸入要添加的单个自定義參數\n（僅支持字母，下劃綫與方括號）';
         invalidFormat = '無效的引數格式 '; MenuRemoveParam = '移除一個手動添加的參數 （頁面刷新後生效）'; noParam = '無此參數';
         break;
       default: // English and others
         MenuClean = 'Manually retry links cleaning'; MenuAddParams = 'Add custom param';
-        InputTitle = 'Please enter a single custom param below (only support letters and underscore):';
+        InputTitle = 'Please enter a single custom param below \n(only support letters, underscore and square brackets):';
         invalidFormat = 'Not a valid parameter format ';
         MenuRemoveParam = 'Remove a custom added param (Effect after refresh)'; noParam = 'No such parameter.';
         break;
@@ -700,8 +700,11 @@
 
 /*
 # Changelog
+v0.6.3 2023
+- Description optimisation (Script menu).
+
 v0.6.2.2 2023.05.22
-- Regex checking optimisation (allow using `[]` in parameter).
+- Regex checking (when add custom param) optimisation (allow using `[]` in parameter).
 
 v0.6.2.1 2023.05.22
 - Script language optimisation.
