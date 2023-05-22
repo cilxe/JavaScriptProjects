@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.6.2.1
+// @version            0.6.2.2
 // @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -625,7 +625,7 @@
     }
     // Add custom params from Script menu (Submenu of addons)
     function addCustomParam(inputParam) {
-      if (/^[a-zA-Z_]*$/.test(inputParam)) {
+      if (/^[a-zA-Z[\]_]*$/.test(inputParam)) {
         let list;
         // eslint-disable-next-line no-undef
         if (!GM_getValue(pageHost)) { list = []; } else { list = GM_getValue(pageHost); }
@@ -700,6 +700,9 @@
 
 /*
 # Changelog
+v0.6.2.2 2023.05.22
+- Regex checking optimisation (allow using `[]` in parameter).
+
 v0.6.2.1 2023.05.22
 - Script language optimisation.
 
