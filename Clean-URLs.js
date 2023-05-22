@@ -1,27 +1,44 @@
 // ==UserScript==
-// @name         跟踪链接净化
-// @name:en      Clean Tracking URLs
-// @name:zh-TW   跟蹤鏈接凈化
-// @namespace    https://greasyfork.org/en/scripts/456881
-// @version      0.6.1
-// @description       净化所有网站的跟踪链接和事件
-// @description:en    Clean all tracking URLs, block tracking events on all websites
-// @description:zh-TW 凈化網際網路上的所有網站鏈接和事件
-// @author       cilxe
-// @match        *://*/*
-// @exclude      *:/*.hdslb.com/*
-// @run-at       document-start
-// @grant        GM_registerMenuCommand
-// @grant        GM_setValue
-// @grant        GM_getValue
-// @icon         data:image/png;base64,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
-// @license      MIT
+// @name               Clean Tracking URLs
+// @name:zh-CN         跟踪链接净化
+// @name:zh-TW         跟蹤鏈接凈化
+// @name:ja            トラッカーの浄化
+// @name:ko            추적 URL 정리
+// @name:ru            Очистить ссылки отслеживания
+// @name:de            Tracking-URLs bereinigen
+// @name:fr            Nettoyer les URLs de suivi
+// @name:es            Limpiar URLs de seguimiento
+// @namespace          https://github.com/cilxe/JavaScriptProjects
+// @author             cilxe
+// @version            0.6.2
+// @description        Clean all tracking URLs, block tracking events on all websites
+// @description:zh-CN  净化所有网站的跟踪链接和事件
+// @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
+// @description:ja     すべてのサイトの追跡リンクとイベントをサニタイズする
+// @description:ko     모든 추적 URL 정리, 모든 웹사이트에서 추적 이벤트 차단
+// @description:ru     Очистить все ссылки отслеживания, заблокировать события отслеживания на всех веб-сайтах
+// @description:de     Alle Tracking-URLs bereinigen, Tracking-Ereignisse auf allen Websites blockieren
+// @description:fr     Nettoyer toutes les URLs de suivi, bloquer les événements de suivi sur tous les sites
+// @description:es     Limpiar todas las URLs de seguimiento, bloquear eventos de seguimiento en todos los sitios web
+// @match              *://*/*
+// @exclude            *:/*.hdslb.com/*
+// @run-at             document-start
+// @grant              GM_registerMenuCommand
+// @grant              GM_setValue
+// @grant              GM_getValue
+// @icon               data:image/png;base64,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
+// @license            MIT
 // ==/UserScript==
 /*
+## Additional feature (script menu)
+- Manually clean up links again.
+- Add custom params for current site (host).
+- Remove custom added param for current site (host).
+
 ## Websites that support common cleaning
 - All websites on the internet.
 
-## Websites that support specified cleaning
+## Websites that support additional cleaning
 - Bilibili
 - Baidu (Unencrypted) URLs
 - CSDN
@@ -47,7 +64,8 @@
   // Common tracking params for all sites
   const commonParams = [
     'utm_source', 'utm_content', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_id', 'utm_sources', // google analytics
-    'spm', 'mkt', 'from', 'page_from', 'src', 'refer_flag', 'ref_', 'ref', 'response_type',
+    'spm', 'mkt', 'from', 'page_from', 'src', 'refer_flag', 'ref_', 'ref', 'response_type', 'source',
+    'spm_id_from', 'vd_source',
     'curator_clanid', 'snr', 'redir', // Steam
   ];
   // Tracking or other params for certain sites
@@ -107,48 +125,98 @@
     // Array.from(params.keys()).forEach((k) => { if (paramsRegex.test(k)) { params.delete(k); } });
     if (url.href !== window.location.href) { window.history.replaceState({}, 'Restore', url.href); }
   }
-  // Clean <a> links (Common)
-  function cleanLinks(siteParams) {
-    const links = doc.getElementsByTagName('a');
-    for (let i = 0; i < links.length; i += 1) {
-      if (hostRegex.test(links[i].hostname)) {
-        const url = new URL(links[i].href);
-        const params = url.searchParams;
-        //  ============== Specified site actions (About to Change) ==============
-        //  1. Ali sites
-        if (/([a-z0-9-.]{0,128})(taobao|tmall).com$/.test(pageHost) && params.has('q')) {
-          params.set('q', links[i].innerText);
-        } else //  2. Tieba.baidu.com
-        if (/([a-z0-9-.]{0,128})(baidu).com$/.test(pageHost) && links[i].innerText === '应用中心') {
-          params.set('kw', links[i].innerText);
-        }
-        siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-        if (links[i].href !== url.href) { links[i].href = url.href; }
-      }
-      //  3. Bilibili 
-      if (siteParams === bilibiliParams) {
-        // Remove Bilibili Card Ads
-        if (links[i].hostname.includes('cm.bilibili.com')) { links[i].remove(); }
-        // Clean <a> link data-url on bilibili.com/video
-        const dataLink = links[i].getAttribute('data-url');
-        if (dataLink !== null) {
-          if (dataLink.includes('bilibili.com') && dataLink.startsWith('//')) {
-            const dlURL = new URL(`https:${dataLink}`);
-            const dlParams = dlURL.searchParams;
-            siteParams.forEach((k) => { if (dlParams.has(k)) { dlParams.delete(k); } });
-            links[i].setAttribute('data-url', dlURL.href);
+  let cleanLinks; // Clean <a> links
+  switch (true) {
+    case /([a-z0-9-.]{0,128})(taobao|tmall).com$/.test(pageHost)://  1. Ali sites
+      cleanLinks = (siteParams) => {
+        const links = doc.getElementsByTagName('a');
+        for (let i = 0; i < links.length; i += 1) {
+          if (hostRegex.test(links[i].hostname)) {
+            const url = new URL(links[i].href);
+            const params = url.searchParams;
+            if (params.has('q')) { params.set('q', links[i].innerText); } // decode error
+            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
+            if (links[i].href !== url.href) { links[i].href = url.href; }
           }
         }
-      } else if (links[i].hostname.includes('amazon.') && links[i].pathname.includes('/ref')) { // 4. Amazon
-        links[i].pathname = links[i].pathname.substring(links[i].pathname.indexOf('/ref'), 1);
-      }
-    }
+      };
+      break;
+    case /([a-z0-9-.]{0,128})(baidu).com$/.test(pageHost)://  2. Tieba.baidu.com
+      cleanLinks = (siteParams) => {
+        const links = doc.getElementsByTagName('a');
+        for (let i = 0; i < links.length; i += 1) {
+          if (hostRegex.test(links[i].hostname)) {
+            const url = new URL(links[i].href);
+            const params = url.searchParams;
+            if (links[i].innerText === '应用中心') { params.set('kw', links[i].innerText); }
+            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
+            if (links[i].href !== url.href) { links[i].href = url.href; }
+          }
+        }
+      };
+      break;
+    case pageHost.includes('bilibili.com') || pageHost.includes('biligame.com'):
+      cleanLinks = (siteParams) => {
+        const links = doc.getElementsByTagName('a');
+        for (let i = 0; i < links.length; i += 1) {
+          if (hostRegex.test(links[i].hostname)) {
+            const url = new URL(links[i].href);
+            const params = url.searchParams;
+            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
+            if (links[i].href !== url.href) { links[i].href = url.href; }
+          }
+          // Remove Bilibili Card Ads
+          if (links[i].hostname.includes('cm.bilibili.com')) { links[i].remove(); }
+          // Clean <a> link data-url on bilibili.com/video
+          const dataLink = links[i].getAttribute('data-url');
+          if (dataLink !== null) {
+            if (dataLink.includes('bilibili.com') && dataLink.startsWith('//')) {
+              const dlURL = new URL(`https:${dataLink}`);
+              const dlParams = dlURL.searchParams;
+              siteParams.forEach((k) => { if (dlParams.has(k)) { dlParams.delete(k); } });
+              links[i].setAttribute('data-url', dlURL.href);
+            }
+          }
+        }
+      };
+      break;
+    case pageHost.includes('amazon.'):
+      cleanLinks = (siteParams) => {
+        const links = doc.getElementsByTagName('a');
+        for (let i = 0; i < links.length; i += 1) {
+          if (hostRegex.test(links[i].hostname)) {
+            const url = new URL(links[i].href);
+            const params = url.searchParams;
+            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
+            if (links[i].href !== url.href) { links[i].href = url.href; }
+          }
+          if (links[i].hostname.includes('amazon.') && links[i].pathname.includes('/ref')) { // 4. Amazon
+            links[i].pathname = links[i].pathname.substring(links[i].pathname.indexOf('/ref'), 1);
+          }
+        }
+      };
+      break;
+    default:
+      cleanLinks = (siteParams) => {
+        const links = doc.getElementsByTagName('a');
+        for (let i = 0; i < links.length; i += 1) {
+          if (hostRegex.test(links[i].hostname)) {
+            const url = new URL(links[i].href);
+            const params = url.searchParams;
+            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
+            if (links[i].href !== url.href) { links[i].href = url.href; }
+          }
+          if (links[i].hostname.includes('amazon.') && links[i].pathname.includes('/ref')) { // 4. Amazon
+            links[i].pathname = links[i].pathname.substring(links[i].pathname.indexOf('/ref'), 1);
+          }
+        }
+      };
+      break;
   }
   function deferredCleanLinks(siteParams, delayTime) {
     clearTimeout(timeoutID);
     timeoutID = setTimeout(() => { restoreState(siteParams); cleanLinks(siteParams); }, delayTime);
   }
-
   // Block clicking events (Common)
   function blockClickEvents(delayTime) {
     timeoutID = setTimeout(() => {
@@ -157,7 +225,7 @@
         if (hostRegex.test(links[i].hostname)) {
           links[i].addEventListener('mousedown', (e) => { e.stopPropagation(); }, true);
           links[i].addEventListener('click', (e) => { e.stopPropagation(); }, true);
-          links[i].addEventListener('contextmenu', (e) => { e.stopPropagation(); }, false); // Clean up copy link behavior on context menu
+          links[i].addEventListener('contextmenu', (e) => { e.stopPropagation(); }, true); // Clean up copy link behavior on context menu
         }
       }
       clearTimeout(timeoutID);
@@ -168,7 +236,7 @@
   function commonClean() {
     switch (true) { // additional params for certain sites
       case pageHost.includes('youtube.com'):
-        commonParams.push('embeds_referring_euri', 'embeds_euri', 'source_ve_path', 'feature');
+        commonParams.push('embeds_referring_euri', 'embeds_euri', 'source_ve_path', 'feature', 'embeds_referring_origin');
         break;
       case pageHost.includes('github.com'):
         commonParams.push('ref_cta', 'ref_loc', 'ref_page');
@@ -244,30 +312,30 @@
   // Remove Bilibili metadata
   function removeBiliMetadData() {
     const metas = doc.getElementsByTagName('meta');
-    for (let i = 0; i < metas.length; i += 1) {
-      if (metas[i].name === 'spm_prefix') { metas[i].remove(); }
-    }
+    for (let i = 0; i < metas.length; i += 1) { if (metas[i].name === 'spm_prefix') { metas[i].remove(); } }
   }
   // Remove Bilibili Annoyances [Login popups, Ads]
   function removeBiliAnnoyances(delayTime) {
     clearTimeout(timeoutID);
     timeoutID = setTimeout(() => {
-      // bilibili ads
       let index = 0;
       do {
         const cardAds = doc.getElementsByTagName('a');
         for (let i = 0; i < cardAds.length; i += 1) {
-          if (cardAds[i].hostname.includes('cm.bilibili.com')) { cardAds[i].remove(); }
+          if (cardAds[i].hostname.includes('cm.bilibili.com')) { cardAds[i].remove(); } // bilibili ads
         }
         index += 1;
       } while (index < 2);
       // bilibili login tips
-      const loginTip = doc.getElementsByClassName('lt-row')[0];
-      const loginCard = doc.getElementsByClassName('bili-login-card')[0];
-      const loginMask = doc.getElementsByClassName('bili-mini-mask')[0];
-      if (loginTip !== undefined) { loginTip.remove(); }
-      if (loginCard !== undefined) { loginCard.remove(); }
-      if (loginMask !== undefined) { loginMask.remove(); }
+      if (doc.getElementsByClassName('right-entry-item')[0].innerText.includes('登录')) {
+        if (doc.querySelector('.lt-row')) { doc.querySelector('.lt-row').remove(); }
+        if (doc.querySelector('.bili-login-card')) { doc.querySelector('.bili-login-card').remove(); }
+        if (doc.querySelector('.v-popover-content')) { doc.querySelector('.v-popover-content').remove(); }
+        if (doc.querySelector('.bili-mini-mask')) { doc.querySelector('.bili-mini-mask').remove(); }
+        doc.getElementsByClassName('right-entry-item')[0].addEventListener('click', () => {
+          window.open('https://passport.bilibili.com/login');
+        });
+      }
     }, delayTime);
   }
   // block clicking events (link, button, li)
@@ -279,20 +347,15 @@
           const isLinkJump = links[i].classList.contains('jump-link');
           const isLinkJumpVideo = links[i].classList.contains('video-time') || links[i].classList.contains('video');
           if (!(isLinkJump && isLinkJumpVideo)) {
-            links[i].addEventListener('click', (e) => {
-              e.stopImmediatePropagation();
-            }, true);
-            links[i].addEventListener('contextmenu', (e) => { e.stopPropagation(); }, false); // Clean up copy link behavior on context menu
+            links[i].addEventListener('click', (e) => { e.stopImmediatePropagation(); }, true);
+            links[i].addEventListener('contextmenu', (e) => { e.stopPropagation(); }, true); // Clean up copy link behavior on context menu
           }
         }
       }
     }
-    blockBLinkEvents();
     function deferredBlockBevents(delayTime) {
       clearTimeout(timeoutID);
-      timeoutID = setTimeout(() => {
-        cleanLinks(bilibiliParams); removeBiliAnnoyances(0); blockBLinkEvents();
-      }, delayTime);
+      timeoutID = setTimeout(() => { cleanLinks(bilibiliParams); removeBiliAnnoyances(0); blockBLinkEvents(); }, delayTime);
     }
     deferredBlockBevents(DELAY_TIME.fast);
     const buttons = doc.getElementsByTagName('button');
@@ -318,8 +381,7 @@
       let x = 0; let y = 0;
       document.onmousemove = (e) => {
         if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
-          cleanLinks(bilibiliParams);
-          blockBClickEvents();
+          cleanLinks(bilibiliParams); blockBClickEvents();
           x = e.clientX; y = e.clientY;
         }
       };
@@ -338,11 +400,7 @@
   }
   // clean top menu events
   function cleanBLTopMenu() {
-    doc.onmousemove = (e) => {
-      if (e.clientY < 200) {
-        cleanLinks(bilibiliParams); blockBClickEvents();
-      }
-    };
+    doc.onmousemove = (e) => { if (e.clientY < 200) { cleanLinks(bilibiliParams); blockBClickEvents(); } };
   }
   // bilibili search events
   function blockBSearchItemEvents() {
@@ -350,37 +408,32 @@
       // input suggested items
       const suggestItems = doc.getElementsByClassName('suggest-item');
       for (let i = 0; i < suggestItems.length; i += 1) {
-        suggestItems[i].addEventListener('click', () => {
-          blockBClickEvents(); deferredBlockBClickEvents(DELAY_TIME.fast);
-        }, true);
+        suggestItems[i].addEventListener('click', () => { deferredBlockBClickEvents(DELAY_TIME.fast); }, true);
       }
       // search trending items
       const topSearchs = doc.getElementsByClassName('trending-item');
       for (let i = 0; i < topSearchs.length; i += 1) {
-        topSearchs[i].addEventListener('click', () => {
-          deferredBlockBClickEvents(DELAY_TIME.fast);
-        }, true);
+        topSearchs[i].addEventListener('click', () => { deferredBlockBClickEvents(DELAY_TIME.fast); }, true);
       }
       // search history items
       const historyItems = doc.getElementsByClassName('history-item');
       for (let i = 0; i < historyItems.length; i += 1) {
-        historyItems[i].addEventListener('click', () => {
-          deferredBlockBClickEvents(DELAY_TIME.fast);
-        }, true);
+        historyItems[i].addEventListener('click', () => { deferredBlockBClickEvents(DELAY_TIME.fast); }, true);
       }
     }
     // search input area
-    const searchInputs = doc.getElementsByClassName('search-input-el');
-    searchInputs[0].addEventListener('click', () => {
-      clearTimeout(timeoutID);
-      timeoutID = setTimeout(() => { blockSearchEvents(); }, DELAY_TIME.fast);
-    }, true);
+    if (doc.querySelector('.search-input-el')) {
+      doc.querySelector('.search-input-el').addEventListener('click', () => {
+        clearTimeout(timeoutID); timeoutID = setTimeout(() => { blockSearchEvents(); }, DELAY_TIME.fast);
+      }, true);
+    }
+
     // clear icon
-    const clearIcon = doc.getElementsByClassName('clear-icon')[0];
-    clearIcon.addEventListener('click', () => {
-      clearTimeout(timeoutID);
-      timeoutID = setTimeout(() => { blockSearchEvents(); }, DELAY_TIME.fast);
-    }, true);
+    if (doc.querySelector('.clear-icon')) {
+      doc.querySelector('.clear-icon').addEventListener('click', () => {
+        clearTimeout(timeoutID); timeoutID = setTimeout(() => { blockSearchEvents(); }, DELAY_TIME.fast);
+      }, true);
+    }
   }
   // search.bilibili.com/*
   function cleanBSearch() {
@@ -388,9 +441,7 @@
     // paging button clicking event
     const pageButtons = doc.getElementsByClassName('vui_pagenation--btn'); // div
     for (let i = 0; i < pageButtons.length; i += 1) {
-      pageButtons[i].addEventListener('click', () => {
-        deferredBlockBClickEvents(DELAY_TIME.fast);
-      }, true);
+      pageButtons[i].addEventListener('click', () => { deferredBlockBClickEvents(DELAY_TIME.fast); }, true);
     }
     deferredBlockBClickEvents(DELAY_TIME.normal);
     deferredCleanLinks(bilibiliParams, DELAY_TIME.slow - 600);
@@ -399,11 +450,12 @@
   function cleanBVideoURL() {
     cleanLinks(bilibiliParams);
     doc.addEventListener('DOMContentLoaded', () => {
-      const unfoldVideo = doc.getElementsByClassName('rec-footer')[0];
-      unfoldVideo.addEventListener('click', () => {
-        deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
-        deferredBlockBClickEvents(bilibiliParams, DELAY_TIME.fast);
-      }, true);
+      if (doc.querySelector('.rec-footer')) {
+        doc.querySelector('.rec-footer').addEventListener('click', () => {
+          deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
+          deferredBlockBClickEvents(bilibiliParams, DELAY_TIME.fast);
+        }, true);
+      }
       // Clean copying url (share copy)
       const url = new URL(pageURL);
       doc.getElementById('arc_toolbar_report').addEventListener('mousemove', () => {
@@ -441,28 +493,29 @@
     timeoutID = setTimeout(() => {
       const navis = doc.getElementsByClassName('tabs__tag-item'); // cat
       for (let i = 0; i < navis.length; i += 1) {
-        navis[i].addEventListener('click', () => {
-          deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
-        }, true);
+        navis[i].addEventListener('click', () => { deferredCleanLinks(bilibiliParams, DELAY_TIME.fast); }, true);
       }
       const tabItems = doc.getElementsByClassName('tab-item'); // sort
       for (let i = 0; i < tabItems.length; i += 1) {
         tabItems[i].addEventListener('click', () => {
-          blockBClickEvents();
-          deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
+          blockBClickEvents(); deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
         }, true);
       }
     }, delayTime);
     intervalID = setInterval(livePopupBlock(BlockLivePopups), DELAY_TIME.normal * 2);
-    timeoutID = setTimeout(() => {
-      clearInterval(intervalID); clearTimeout(timeoutID);
-    }, DELAY_TIME.slow + 3000 * 300);
+    timeoutID = setTimeout(() => { clearInterval(intervalID); clearTimeout(timeoutID); }, DELAY_TIME.slow + 3000 * 300);
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Baidu ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   // Baidu related search, Hot search URL cleaning
   function cleanBaidu() {
     if (pageHost.includes('news.baidu.com')) { baiduParams.push('toc_style_id', 'share_to', 'track_id'); }
     restoreState(baiduParams);
+    function removeBDAds() {
+      const searchAds = document.getElementsByClassName('EC_result');
+      for (let i = 0; i < searchAds.length; i += 1) {
+        searchAds[i].remove();
+      }
+    }
     function cleanBDLinks(siteParams) {
       cleanLinks(baiduParams);
       const links = doc.getElementsByTagName('a');
@@ -474,38 +527,38 @@
           links[i].href = links[i].href.replace('from=', '');
         }
       }
-      const areas = doc.getElementsByTagName('area');
-      if (areas.length === 1) {
-        const areaURL = new URL(areas[0].href);
+      if (doc.querySelector('area')) {
+        const areaURL = new URL(doc.querySelector('area').href);
         const params = areaURL.searchParams;
         siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-        areas[0].href = areaURL.href;
+        doc.querySelector('area').href = areaURL.href;
       }
     }
     function blockBDTrackingEvents() {
       doc.addEventListener('DOMContentLoaded', () => {
         const links = doc.getElementsByTagName('a');
         for (let i = 0; i < links.length; i += 1) {
-          if (links[i].href !== '') {
-            links[i].addEventListener('click', () => { cleanBDLinks(baiduParams); }, true);
-          }
+          if (links[i].href !== '') { links[i].addEventListener('click', () => { cleanBDLinks(baiduParams); }, true); }
         }
       });
     }
-    cleanBDLinks(baiduParams);
-    blockBDTrackingEvents();
+    cleanBDLinks(baiduParams); blockBDTrackingEvents();
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-      if (Math.abs(scrolls - topScroll) > 150) {
-        cleanLinks(baiduParams);
-        topScroll = scrolls;
-      }
+      if (Math.abs(scrolls - topScroll) > 150) { cleanLinks(baiduParams); topScroll = scrolls; }
+      if (pageURL.includes('www.baidu.com/s')) { removeBDAds(); }
     };
+    if (pageURL.includes('www.baidu.com/s')) { // Baidu search ads
+      removeBDAds();
+      window.onscroll = () => {
+        const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
+        removeBDAds(); topScroll = scrolls;
+      };
+    }
     let x = 0; let y = 0;
     doc.onmousemove = (e) => {
       if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
-        cleanLinks(baiduParams);
-        x = e.clientX; y = e.clientY;
+        cleanLinks(baiduParams); x = e.clientX; y = e.clientY;
       }
     };
   }
@@ -516,37 +569,16 @@
     function blockCSDNEvents() {
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
-        if (links[i].href !== '') {
-          links[i].addEventListener('click', (e) => { e.stopPropagation(); }, true);
-        }
+        if (links[i].href !== '') { links[i].addEventListener('click', (e) => { e.stopPropagation(); }, true); }
       }
     }
     doc.onmousemove = (e) => {
-      if (e.clientY < 170 || e.clientY > 450) {
-        cleanLinks(csdnParams);
-        blockCSDNEvents();
-      }
+      if (e.clientY < 170 || e.clientY > 450) { cleanLinks(csdnParams); blockCSDNEvents(); }
     };
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-      if (Math.abs(scrolls - topScroll) > 150) {
-        cleanLinks(csdnParams);
-        blockCSDNEvents();
-        topScroll = scrolls;
-      }
+      if (Math.abs(scrolls - topScroll) > 150) { cleanLinks(csdnParams); blockCSDNEvents(); topScroll = scrolls; }
     };
-  }
-  // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Youku, Douyin, Amazon ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
-  function customClean(siteParams) {
-    restoreState(siteParams); cleanLinks(siteParams);
-    let x = 0; let y = 0;
-    doc.addEventListener('mousemove', (e) => {
-      if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
-        cleanLinks(siteParams);
-        x = e.clientX; y = e.clientY;
-      }
-    });
-    doc.addEventListener('mousedown', (e) => { cleanLinks(siteParams); e.stopPropagation(); }, false);
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Ali Sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanAliSites() {
@@ -554,47 +586,61 @@
     blockClickEvents(DELAY_TIME.fast);
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-      if (scrolls - topScroll > 150) {
-        cleanLinks(aliParams); blockClickEvents();
-        topScroll = scrolls;
-      }
+      if (scrolls - topScroll > 150) { cleanLinks(aliParams); blockClickEvents(); topScroll = scrolls; }
     };
     doc.addEventListener('mousemove', (e) => { if (e.clientY < 120) { cleanLinks(aliParams); blockClickEvents(); } });
   }
-  // function cleanAmazon(siteParams) {
-  //   restoreState(siteParams);
-  //   cleanLinks(siteParams);
-  //   const amazonRegex = /([a-z0-9-.]{0,128})(amazon).(com|cn|co.uk|co.jp|fr|de|ca|au|ae|tr|sg|es)$/;
-  //   blockClickEvents();
-  // }
+  // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Custom clean ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
+  // Youku, Douyin, Amazon
+  function customClean(siteParams) {
+    restoreState(siteParams); cleanLinks(siteParams);
+    let x = 0; let y = 0;
+    doc.addEventListener('mousemove', (e) => {
+      if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
+        cleanLinks(siteParams); x = e.clientX; y = e.clientY;
+      }
+    });
+    doc.addEventListener('mousedown', (e) => { cleanLinks(siteParams); e.stopPropagation(); }, false);
+  }
   (() => {
-    // Menu language (May not properly change due to browser settings)
-    const userLanguage = navigator.language;
-    let MenuClean; let MenuAddParams; let InputTitle;
-    switch (true) {
-      case userLanguage === 'zh-CN' || userLanguage === 'zh-SG':
-        MenuClean = '手动清理链接'; MenuAddParams = '添加自定义参数';
-        InputTitle = '请输入要添加的单个自定义参数';
+    // Menu language (May not change properly due to browser settings)
+    let MenuClean; let MenuAddParams; let InputTitle; let invalidFormat; let MenuRemoveParam; let noParam;
+    switch (navigator.language) {
+      case 'zh-CN' || 'zh-SG':
+        MenuClean = '手动清理链接'; MenuAddParams = '添加自定义参数'; InputTitle = '请输入要添加的单个自定义参数（仅字母与下划线）';
+        invalidFormat = '无效的参数格式 '; MenuRemoveParam = '移除一个手动添加的参数（页面刷新后生效）'; noParam = '无此参数';
         break;
-      case userLanguage === 'zh-TW' || userLanguage === 'zh-HK':
-        MenuClean = '手動清理連結'; MenuAddParams = '添加自定義參數';
-        InputTitle = '請輸入要添加的单个自定義參數';
+      case 'zh-TW' || 'zh-HK':
+        MenuClean = '手動清理連結'; MenuAddParams = '添加自定義參數'; InputTitle = '請輸入要添加的单个自定義參數（僅字母與下劃綫）';
+        invalidFormat = '無效的引數格式 '; MenuRemoveParam = '移除一個手動添加的參數 （頁面刷新後生效）'; noParam = '無此參數';
         break;
       default: // English and others
         MenuClean = 'Manually retry links cleaning'; MenuAddParams = 'Add custom param';
-        InputTitle = 'Please add custom param (single) here';
+        InputTitle = 'Please enter a single custom param below (only support letters and underscore):';
+        invalidFormat = 'Not a valid parameter format ';
+        MenuRemoveParam = 'Remove a custom added param (Effecting after refresh)'; noParam = 'No such parameter.';
         break;
     }
-    // Add custom params from Script menu (Sub menu of addons)
-    function addCustomParams(param) {
-      let list;
-      // eslint-disable-next-line no-undef
-      if (!GM_getValue(`${pageHost}`)) { list = Array.from([]); } else { list = GM_getValue(`${pageHost}`); }
-      if (!param) { // null undefined empty
-      } else { // eslint-disable-next-line no-undef
-        list.push(param); GM_setValue(`${pageHost}`, list);
+    // Add custom params from Script menu (Submenu of addons)
+    function addCustomParam(inputParam) {
+      if (/^[a-zA-Z_]*$/.test(inputParam)) {
+        let list;
+        // eslint-disable-next-line no-undef
+        if (!GM_getValue(pageHost)) { list = []; } else { list = GM_getValue(pageHost); }
+        // eslint-disable-next-line no-undef
+        if (inputParam) { list.push(inputParam); GM_setValue(pageHost, list); }
+        list.forEach((v) => { if (!commonParams.includes(v)) { commonParams.push(v); } });
+      } else { alert(invalidFormat); }
+    }
+    function removeCustomAddedParam(inputParam) { // Remove a parameter that have added from script menu
+      if (inputParam !== null && inputParam !== undefined) {
+        let list;
+        // eslint-disable-next-line no-undef
+        if (!GM_getValue(pageHost)) { list = []; } else { list = GM_getValue(pageHost); }
+        if (list.includes(inputParam)) { // eslint-disable-next-line no-undef
+          list = list.filter((item) => item !== inputParam); GM_setValue(pageHost, list);
+        } else { alert(noParam); }
       }
-      for (let i = 0; i < list.length; i += 1) { if (!commonParams.includes(list[i])) { commonParams.push(list[i]); } }
     }
     const isBilibili = pageHost.includes('bilibili.com') || pageHost.includes('biligame.com');
     const aliRegex = /([a-z0-9-.]{0,128})(alibaba|alibabagroup|aliyun|alimama|aliexpress|taobao|tmall|1688)\.(com|hk|cn)$/;
@@ -617,7 +663,7 @@
             bilibiliListenMoving();
             break;
         }
-        doc.addEventListener('DOMContentLoaded', () => { removeBiliMetadData(); });
+        doc.addEventListener('DOMContentLoaded', () => { removeBiliMetadData(); removeBiliAnnoyances(1000); });
         break;
       case pageHost.includes('baidu.com'):
         siteParams = baiduParams; cleanBaidu();
@@ -638,18 +684,27 @@
         siteParams = douyinParams; customClean(douyinParams);
         break;
       default:
-        siteParams = commonClean(); addCustomParams('');
+        siteParams = commonClean(); addCustomParam('');
         // eslint-disable-next-line no-undef
-        GM_registerMenuCommand(MenuAddParams, () => { addCustomParams(prompt(InputTitle, '')); }); // Menu: Add custom params
+        GM_registerMenuCommand(MenuAddParams, () => { addCustomParam(prompt(InputTitle, '')); }); // Menu: Add custom param
+        // eslint-disable-next-line no-undef
+        GM_registerMenuCommand(MenuRemoveParam, () => { removeCustomAddedParam(prompt(InputTitle, '')); }); // Menu: Remove custom added param
         break;
     }
     // eslint-disable-next-line no-undef
-    GM_registerMenuCommand(MenuClean, () => { console.log(siteParams); cleanLinks(siteParams); }, 'C'); // Menu: retry clean
+    GM_registerMenuCommand(MenuClean, () => { console.log(siteParams); cleanLinks(siteParams); }, 'C'); // Menu: Retry clean links
   })();
 })();
 
 /*
 # Changelog
+v0.6.2 2023.05.22
+- Script logic and performance optimisation.
+- Add format validation before adding params (from GM_setValue to storage);
+- Add a script menu function which can remove a custom added parameter.
+- Remove more tracking params.
+- Remove Baidu Search ad results (Testing).
+
 v0.6.1 2023.05.18  
 - Fix an error about array merging, from Array.push() to Array.concat().
 - Clean more params for common sites and `Amazon`, `weibo|stackoverflow|tmall.com`.
