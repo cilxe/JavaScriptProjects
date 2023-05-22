@@ -1,7 +1,8 @@
 // ==UserScript==
-// @name               Clean Tracking URLs
+// @name               跟踪链接净化
 // @name:zh-CN         跟踪链接净化
 // @name:zh-TW         跟蹤鏈接凈化
+// @name:en            Clean Tracking URLs
 // @name:ja            トラッカーの浄化
 // @name:ko            추적 URL 정리
 // @name:ru            Очистить ссылки отслеживания
@@ -10,10 +11,11 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.6.2
-// @description        Clean all tracking URLs, block tracking events on all websites
+// @version            0.6.2.1
+// @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
+// @description:en     Clean all tracking URLs, block tracking events on all websites
 // @description:ja     すべてのサイトの追跡リンクとイベントをサニタイズする
 // @description:ko     모든 추적 URL 정리, 모든 웹사이트에서 추적 이벤트 차단
 // @description:ru     Очистить все ссылки отслеживания, заблокировать события отслеживания на всех веб-сайтах
@@ -618,7 +620,7 @@
         MenuClean = 'Manually retry links cleaning'; MenuAddParams = 'Add custom param';
         InputTitle = 'Please enter a single custom param below (only support letters and underscore):';
         invalidFormat = 'Not a valid parameter format ';
-        MenuRemoveParam = 'Remove a custom added param (Effecting after refresh)'; noParam = 'No such parameter.';
+        MenuRemoveParam = 'Remove a custom added param (Effect after refresh)'; noParam = 'No such parameter.';
         break;
     }
     // Add custom params from Script menu (Submenu of addons)
@@ -698,6 +700,9 @@
 
 /*
 # Changelog
+v0.6.2.1 2023.05.22
+- Script language optimisation.
+
 v0.6.2 2023.05.22
 - Script logic and performance optimisation.
 - Add format validation before adding params (from GM_setValue to storage);
