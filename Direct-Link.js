@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Direct Link
 // @name:zh-CN   重定向链接转直链
-// @namespace    https://greasyfork.org/en/scripts/463408/
+// @namespace    hhttps://github.com/cilxe/JavaScriptProjects
 // @version      0.1.9
 // @description  Replace the redirect links with direct links
 // @description:zh-CN  将页面内所有重定向式的链接替换为直链
@@ -55,9 +55,10 @@
 - pixiv.net
 - vk.com
 - deviantart.com
-- jd.com
+- JD.com (prevent redirecting)
 - tmall.com (goto)
 - wiki.biligame.com
+- linkstars.com (prevent redirecting)
 */
 (() => {
   const DELAY_TIME = { fast: 600, normal: 1000, slow: 2500 };
@@ -71,7 +72,7 @@
   const INDEX_REDIRECTTO = ['redirectTo']; // epicgames
   const INDEX_GOTO = ['goto']; // Tmall (alipay.com/?goto)
   // eslint-disable-next-line max-len
-  const siteRegex = /([a-z0-9-.]{0,128})(youtube|steamcommunity|zhihu|pixiv|jianshu|juejin|leetcode|oschina|gitee|sspai|gcores|alipay|epicgames|vk|adjust|viglink)\.(com|hk|cn)$|shop-links.co|game.bilibili.com/;
+  const siteRegex = /([a-z0-9-.]{0,128})(youtube|steamcommunity|zhihu|pixiv|jianshu|juejin|leetcode|oschina|gitee|sspai|gcores|alipay|epicgames|vk|adjust|viglink)\.(com|hk|cn|net)$|shop-links.co|game.bilibili.com/;
   const pageHost = window.location.hostname;
   const pageURL = window.location.href;
   const doc = document;
@@ -84,9 +85,20 @@
         timeoutID = setTimeout(() => {
           const links = doc.getElementsByTagName('a');
           for (let i = 0; i < links.length; i += 1) {
-            if (!links[i].search.includes('?url=')) {
-              if (links[i].href !== decodeURIComponent(links[i].search.substring(1, links[i].href.length))) {
-                links[i].href = decodeURIComponent(links[i].search.substring(1, links[i].href.length));
+            if (siteRegex.test(links[i].hostname)) {
+              if (links[i].search.includes('?url=')) {
+                const url = new URL(links[i].href);
+                const params = url.searchParams;
+                directURLParams.forEach((k) => {
+                  if (links[i].href !== decodeURIComponent(params.get(k))) {
+                    links[i].href = decodeURIComponent(params.get(k));
+                  }
+                });
+              }
+              if (links[i].href.includes('jump.php?')) {
+                if (links[i].href !== decodeURIComponent(links[i].search.substring(1, links[i].href.length))) {
+                  links[i].href = decodeURIComponent(links[i].search.substring(1, links[i].href.length));
+                }
               }
             }
           }
@@ -150,12 +162,12 @@
         doc.getElementById('bottom-row').addEventListener('click', () => {
           linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast);
         }, true);
+        doc.getElementById('items').addEventListener('click', () => { linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast); });
         doc.getElementById('description-inner').addEventListener('mouseenter', () => { linkDirect(INDEX_YOUTUBE_Q, 0); });
         const naviTabs = doc.getElementsByClassName('ytd-c4-tabbed-header-renderer');
         for (let i = 0; i < naviTabs.length; i += 1) {
           naviTabs[i].addEventListener('click', () => { linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast); }, true);
         }
-        doc.getElementById('items').addEventListener('click', () => { linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast); });
       }, DELAY_TIME.normal * 2);
     }
     doc.addEventListener('DOMContentLoaded', () => { run(); doc.onvisibilitychange = () => { run(); }; });
@@ -234,9 +246,9 @@
 })();
 
 /*
-v0.1.9 beta
+v0.1.9 2023.05.24
 - Directing for wiki.biligame.com, www.linkstars.com.
-- Performance optimisation.
+- Performance optimisation and bug fixes.
 
 v0.1.8 2023.05.18  
 - Directing for JD.com, Tmall.com.
