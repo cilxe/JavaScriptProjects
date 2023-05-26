@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Direct Link
 // @name:zh-CN   重定向链接转直链
-// @namespace    hhttps://github.com/cilxe/JavaScriptProjects
-// @version      0.1.9
+// @namespace    https://github.com/cilxe/JavaScriptProjects
+// @version      0.2.0
 // @description  Replace the redirect links with direct links
 // @description:zh-CN  将页面内所有重定向式的链接替换为直链
 // @author       cilxe
@@ -47,7 +47,7 @@
 - leetcode.cn
 - oschina.net
 - gitee.com
-- xda-developers.com (shop-links.co, vglink.com, anrdoezrs.net)
+- xda-developers.com
 - sspai.com
 - gcores.com
 - zhihu.com
@@ -72,30 +72,30 @@
   const INDEX_REDIRECTTO = ['redirectTo']; // epicgames
   const INDEX_GOTO = ['goto']; // Tmall (alipay.com/?goto)
   // eslint-disable-next-line max-len
-  const siteRegex = /([a-z0-9-.]{0,128})(youtube|steamcommunity|zhihu|pixiv|jianshu|juejin|leetcode|oschina|gitee|sspai|gcores|alipay|epicgames|vk|adjust|viglink)\.(com|hk|cn|net)$|shop-links.co|game.bilibili.com/;
+  const regStr = '(youtube|steamcommunity|zhihu|pixiv|jianshu|juejin|leetcode|oschina|gitee|sspai|gcores|alipay|epicgames'
+    + '|vk|adjust).(com|hk|cn|net)$|game.bilibili.com$';
+  let siteRegex = new RegExp(regStr);
   const pageHost = window.location.hostname;
   const pageURL = window.location.href;
   const doc = document;
-  // Replace with direct url
-  let linkDirect;
+  let linkDirect; // Replace with direct url
   switch (true) {
-    case pageHost.includes('pixiv.net'):
+    case /(deviantart.com|pixiv.net)$/.test(pageHost):
       linkDirect = (directURLParams, delayTime) => {
         clearTimeout(timeoutID);
         timeoutID = setTimeout(() => {
           const links = doc.getElementsByTagName('a');
           for (let i = 0; i < links.length; i += 1) {
             if (siteRegex.test(links[i].hostname)) {
-              if (links[i].search.includes('?url=')) {
-                const url = new URL(links[i].href);
-                const params = url.searchParams;
-                directURLParams.forEach((k) => {
-                  if (links[i].href !== decodeURIComponent(params.get(k))) {
-                    links[i].href = decodeURIComponent(params.get(k));
-                  }
-                });
-              }
-              if (links[i].href.includes('jump.php?')) {
+              const url = new URL(links[i].href);
+              const params = url.searchParams;
+              directURLParams.forEach((k) => {
+                if (params.has(k) && links[i].href !== decodeURIComponent(params.get(k))) {
+                  links[i].href = decodeURIComponent(params.get(k));
+                }
+              });
+              // pixiv.net | deviantart.com
+              if (/jump.php|outgoing/.test(links[i].pathname)) {
                 if (links[i].href !== decodeURIComponent(links[i].search.substring(1, links[i].href.length))) {
                   links[i].href = decodeURIComponent(links[i].search.substring(1, links[i].href.length));
                 }
@@ -104,28 +104,28 @@
           }
         }, delayTime);
       };
-      break;
-    case pageHost.includes('x-da.developers.com'):
+      break; // xda.developers.com (shop-links.co, vglink.com, anrdoezrs.net, a9yw.net, onepluscom.pxf.io)
+    case /xda.developers.com$/.test(pageHost):
+      siteRegex = /(shop-links.co|anrdoezrs.net|a9yw.net|pxf.io|viglink.com)$/;
       linkDirect = (directURLParams, delayTime) => {
         clearTimeout(timeoutID);
         timeoutID = setTimeout(() => {
           const links = doc.getElementsByTagName('a');
           for (let i = 0; i < links.length; i += 1) {
-            if (links[i].pathname.includes('http')) {
-              links[i].href = decodeURIComponent(links[i].search.substring(1, links[i].search.length));
-            }
-          }
-        }, delayTime);
-      };
-      break;
-    case pageHost.includes('deviantart.com'): // deviantart.com
-      linkDirect = (directURLParams, delayTime) => {
-        clearTimeout(timeoutID);
-        timeoutID = setTimeout(() => {
-          const links = doc.getElementsByTagName('a');
-          for (let i = 0; i < links.length; i += 1) {
-            if (links[i].pathname.includes('outgoing')) {
-              links[i].href = decodeURIComponent(links[i].search.substring(1, links[i].search.length));
+            if (siteRegex.test(links[i].hostname)) {
+              const url = new URL(links[i].href);
+              const params = url.searchParams;
+              directURLParams.forEach((k) => {
+                if (params.has(k) && links[i].href !== decodeURIComponent(params.get(k))) {
+                  links[i].href = decodeURIComponent(params.get(k));
+                }
+              });
+              let realLink = links[i].href;
+              if (/http/.test(links[i].search)) { realLink = links[i].search.substring(1, links[i].href.length); }
+              if (/http/.test(links[i].pathname)) {
+                realLink = links[i].pathname.substring(links[i].pathname.lastIndexOf('http'), links[i].href.length);
+              }
+              if (links[i].href !== decodeURIComponent(realLink)) { links[i].href = decodeURIComponent(realLink); }
             }
           }
         }, delayTime);
@@ -151,27 +151,18 @@
       };
       break;
   }
-
   // Youtube additional steps
   function youtubeDirect() {
-    linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast);
     function run() {
-      clearTimeout(timeoutID);
+      clearTimeout(timeoutID); linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast);
       timeoutID = setTimeout(() => {
         linkDirect(INDEX_YOUTUBE_Q, 0);
-        doc.getElementById('bottom-row').addEventListener('click', () => {
-          linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast);
-        }, true);
-        doc.getElementById('items').addEventListener('click', () => { linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast); });
-        doc.getElementById('description-inner').addEventListener('mouseenter', () => { linkDirect(INDEX_YOUTUBE_Q, 0); });
-        const naviTabs = doc.getElementsByClassName('ytd-c4-tabbed-header-renderer');
-        for (let i = 0; i < naviTabs.length; i += 1) {
-          naviTabs[i].addEventListener('click', () => { linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast); }, true);
-        }
+        doc.addEventListener('click', () => { linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast); });
       }, DELAY_TIME.normal * 2);
     }
-    doc.addEventListener('DOMContentLoaded', () => { run(); doc.onvisibilitychange = () => { run(); }; });
+    doc.addEventListener('DOMContentLoaded', () => { run(); }); doc.onvisibilitychange = () => { run(); };
   }
+  // Main execution
   (() => {
     let indexParam;
     // Menu language (May not change properly due to browser settings)
@@ -188,8 +179,8 @@
         MenuTitle = 'Manually retry link replacing';
         break;
     }
-    const adjust = /([a-z0-9-.]{0,128})(hoyolab|mozilla|firefox).(com|org)$/.test(pageHost);
-    const usingTarget = /([a-z0-9-.]{0,128})(juejin|leetcode|gitee|sspai|gcores|zhihu).(com|cn)$/.test(pageHost);
+    const adjust = /(hoyolab|mozilla|firefox).(com|org)$/.test(pageHost);
+    const usingTarget = /(juejin|leetcode|gitee|sspai|gcores|zhihu).(com|cn)$/.test(pageHost);
     switch (true) {
       case usingTarget:
         indexParam = INDEX_TARGET;
@@ -203,10 +194,10 @@
       case pageHost.includes('tmall.com'):
         indexParam = INDEX_GOTO;
         break;
-      case /([a-z0-9-.]{0,128})(steampowered|steamcommunity).com$|wiki.biligame.com|pixiv.net/.test(pageHost):
+      case /(steampowered|steamcommunity).com$|wiki.biligame.com$|pixiv.net$/.test(pageHost):
         indexParam = INDEX_URL;
         break;
-      case /([a-z0-9-.]{0,128})(vk|jianshu).com$/.test(pageHost):
+      case /(vk|jianshu).com$/.test(pageHost):
         indexParam = INDEX_TO;
         break;
       case pageHost.includes('epicgames.com'):
@@ -218,34 +209,31 @@
       case pageHost.includes('xda-developers.com'):
         INDEX_URL.push('u'); indexParam = INDEX_URL;
         break;
-      case pageHost.includes('deviantart.com'):
-        indexParam = INDEX_URL;
-        break;
       case /(union-click.jd.com|www.linkstars.com)$/.test(pageHost):
-        window.stop();
+        window.stop(); indexParam = INDEX_REDIRECTTO;
         window.location.replace(decodeURIComponent(new URL(pageURL).searchParams.get(INDEX_TO)));
         break;
       default:
         break;
     }
-    switch (true) {
-      case pageHost.includes('union-click.jd.com'):
-        break;
-      default:
-        linkDirect(indexParam, DELAY_TIME.normal);
-        // eslint-disable-next-line no-undef
-        GM_registerMenuCommand(MenuTitle, () => { linkDirect(indexParam, 0); }, 'D');
-        // Executiing until it scrolls to the bottom of the page
-        window.onscroll = () => {
-          const scrolls = doc.documentElement.scrollTop || document.body.scrollTop;
-          if (scrolls - topScroll > 100) { linkDirect(indexParam, 0); topScroll = scrolls; }
-        };
-        break;
-    }
+    doc.addEventListener('DOMContentLoaded', () => { linkDirect(indexParam, DELAY_TIME.normal); });
+    // linkDirect(indexParam, DELAY_TIME.normal);
+    // eslint-disable-next-line no-undef
+    GM_registerMenuCommand(MenuTitle, () => { linkDirect(indexParam, 0); }, 'D');
+    // Executiing until it scrolls to the bottom of the page
+    window.onscroll = () => {
+      const scrolls = doc.documentElement.scrollTop || document.body.scrollTop;
+      if (scrolls - topScroll > 100) { linkDirect(indexParam, 0); topScroll = scrolls; }
+    };
   })();
 })();
 
 /*
+v0.2.0 
+- Improve replacing efficiency on youtube.
+- Replacing more links on xda (a9yw.net|pxf.io).
+- Code reduction.
+
 v0.1.9 2023.05.24
 - Directing for wiki.biligame.com, www.linkstars.com.
 - Performance optimisation and bug fixes.
