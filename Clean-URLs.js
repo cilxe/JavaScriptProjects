@@ -23,23 +23,23 @@
 // @description:fr     Nettoyer toutes les URLs de suivi, bloquer les événements de suivi sur tous les sites
 // @description:es     Limpiar todas las URLs de seguimiento, bloquear eventos de seguimiento en todos los sitios web
 // @match              *://*/*
-// @exclude            /^https?://([a-z0-9-.]{0,52})(hdslb.com|csdnimg.cn)/.*$/
+// @exclude            /^https?:\/\/([a-z0-9-.]{0,52})(hdslb.com|csdnimg.cn)\/.*$/
 // @run-at             document-start
 // @grant              GM_registerMenuCommand
-// @grant              GM_setValue
 // @grant              GM_getValue
+// @grant              GM_setValue
 // @icon               data:image/png;base64,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
 // @license            MIT
 // ==/UserScript==
 /*
 ## Main features
 - Auto clean up all URLs and block tracking events by default.
-- Quick cleaning with keyboard shortcuts (Shift + Alt + X). `(v0.6.3~)`
+- Manually clean all links with keyboard shortcuts (Shift + Alt + X). `(v0.6.3~)`
 
 ## Additional features (Through script menu)
-- Manually clean up links again. `(v0.5.2~)`
-- Add custom params for current site (host). `(v0.6.1~)`
-- Remove custom added param for current site (host). `(v0.6.2~)`
+- Manually clean up the links again. `(v0.5.2~)`
+- Add specific tracking params for the current site (host). `(v0.6.1~)`
+- Remove custom added params for the current site (host). `(v0.6.2~)`
 
 ## Websites that support common cleaning
 - All websites on the internet.
@@ -72,12 +72,12 @@
     'spm', 'mkt', 'from', 'page_from', 'src', 'response_type', 'source', 'alias', 'spm_id_from', 'vd_source',
     'curator_clanid', 'snr', 'redir', // Steam
   ];
-  const commonParamsReg = /^(utm_|spm_|from_|ref|track)/i; // Matches all tracking param-names which contained
+  const commonParamsReg = /^(utm_|spm_|from_|ref|track)/i; // Matches all tracking params that contains the name
   // Tracking or other params for certain sites
   const bilibiliParams = ['spm_id_from', 'spm_id', 'vd_source', 'from_spmid', 'csource',
     'sourceFrom', 'hotRank', 'live_from', 'from', 'launch_id', 'msource', 'popular_rank',
     'session_id', 'business', 'sort_field', 'broadcast_type', 'is_room_feed', 'dynamicspm_id_from',
-    'is_live_full_webview', 'is_live_webview', 'refer_from', 'vt', 'from_source', 'theme',
+    'is_live_full_webview', 'is_live_webview', 'refer_from', 'vt', 'from_source', 'theme', 'visit_id',
     'share_source', 'share_plat', 'share_session_id', 'share_tag', 'timestamp', 'unique_k'];
   const baiduParams = ['rsv_idx', 'hisfilter', 'rsf', 'rsv_pq', 'rsv_t', 'qid', 'rsv_dl', // baidu
     'sa', 'rqid', 'oq', 'gpc', 'usm', 'tfflag', 'ie', 'bs', 'rqlang', 'tn', 'sc_us', 'wfr',
@@ -86,7 +86,7 @@
     'lm', 'site', 'sites', 'fr', 'cl', 'bsst', 'lid', 'rsv_spt', 'rsv_bp', 'src', 'sfrom',
     'refer', 'zp_fr', 'channel', 'p_from', 'n_type', 'eqid',
     'uname', 'uid', 'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', // tieba
-    'frwh', 'obj_id', 'fid', 'fname', '_t', 'topic_name', 'frs', 't', 'share_from', 'idfrom',
+    'frwh', 'obj_id', 'fid', 'fname', '_t', 'topic_name', 'frs', 'share_from', 'idfrom',
     'tpl', 'u', 'tb_mod', 'tb_fr', 'share', 'sfc', 'client_version', 'unique', 'is_video', 'st',
     '_wkts_', 'ai', 'ck', 'shh', // wenku
     'utm_source', 'utm_medium', 'utm_term', 'utm_campaign', 'utm_content', 'utm_id',
@@ -100,23 +100,25 @@
     'spm', 'lwfrom', 'from', 'scene', 'utm_content', 'utm_term', 'utm_source', 'utm_campaign', 'utm_medium', 'utm_id',
     // taobao.com/tmall.com/1688.com/tmall.hk
     'scm', 'stats_click', 'initiative_id', 'wh_pid', 'wh_random_str', 'source', 'suggest', 'suggest_query', 'pvid',
-    'iconType', 'detailSharePosition', 'traceId', 'relationId', 'union_lens',
+    'iconType', 'detailSharePosition', 'traceId', 'relationId', 'union_lens', 'ref', 'ali_trackid', 'ak',
     'topOfferIds', 'search_condition', 'industryCatId', 'tbSocialPopKey', 'bxsign', 'shareUniqueId', 'sp_abtk', 'acm',
     'clickTrackInfo', 'wx_navbar_transparent', 'wh_weex', 'data_prefetch', 'at_iframe', 'prefetch_replace', 'wc', // lazada, trendyol
   ];
   const amazonParams = ['sprefix'];
-  (() => { // Binding urlchange event for pushState and replaceState
+  (() => { // Binding urlchange event for pushState and replaceState   [https://stackoverflow.com/a/52809105]
     const originPushState = window.history.pushState;
     const originReplaceState = window.history.replaceState;
     window.history.pushState = function pushState(...args) {
+      const newPushState = originPushState.apply(this, args);
       window.dispatchEvent(new Event('pushstate'));
       window.dispatchEvent(new Event('urlchange'));
-      return originPushState.apply(this, args);
+      return newPushState;
     };
     window.history.replaceState = function replaceState(...args) {
+      const newReplaceState = originReplaceState.apply(this, args);
       window.dispatchEvent(new Event('replacestate'));
       window.dispatchEvent(new Event('urlchange'));
-      return originReplaceState.apply(this, args);
+      return newReplaceState;
     };
   })();
   //  Restore history state, remove redundant params (Common)
@@ -138,7 +140,7 @@
             const params = url.searchParams;
             if (params.has('q')) { params.set('q', links[i].innerText); } // //  1. Ali sites (decode error)
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            const paramsRegex = /^(utm_|spm_|from_|ref|track)/i; // Matches all tracking param-names which contained
+            const paramsRegex = /^(utm_|spm_|from_|ref|track)/i; // Matches all tracking params that contains the name
             Array.from(params.keys()).forEach((k) => { if (paramsRegex.test(k)) { params.delete(k); } });
             if (links[i].href !== url.href) { links[i].href = url.href; }
           }
@@ -218,29 +220,39 @@
       break;
   }
   function deferredCleanLinks(siteParams, delayTime) {
-    clearTimeout(timeoutID);
-    timeoutID = setTimeout(() => { restoreState(siteParams); cleanLinks(siteParams); }, delayTime);
+    timeoutID = setTimeout(() => {
+      restoreState(siteParams); cleanLinks(siteParams); clearTimeout(timeoutID);
+    }, delayTime);
   }
-  // Block clicking events (Common)
-  function blockClickEvents(delayTime) {
+  // Block link clicking events (Common)
+  function blockClickEvents(siteParams, delayTime) {
     timeoutID = setTimeout(() => {
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
         if (hostRegex.test(links[i].hostname)) {
-          links[i].addEventListener('mousedown', (e) => { e.stopPropagation(); }, true);
-          links[i].addEventListener('click', (e) => { e.stopPropagation(); }, true);
-          links[i].addEventListener('contextmenu', (e) => { e.stopPropagation(); }, true); // Block tracking events on context menu
+          links[i].addEventListener('mousedown', () => { cleanLinks(siteParams); }, false);
+          links[i].addEventListener('keyup', () => { cleanLinks(siteParams); }, false);
+          links[i].addEventListener('click', () => { cleanLinks(siteParams); }, false);
+          links[i].addEventListener('auxclick', (e) => { e.stopImmediatePropagation(); cleanLinks(siteParams); }, false);
+          links[i].addEventListener('contextmenu', (e) => { e.stopImmediatePropagation(); }, false); // Block tracking events on context menu
         }
-      }
-      clearTimeout(timeoutID);
+      } clearTimeout(timeoutID);
     }, delayTime);
   }
-
-  // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Common sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
+  // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Common sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function commonClean() {
     switch (true) { // additional params for certain sites
       case pageHost.includes('youtube.com'):
         commonParams.push('embeds_referring_euri', 'embeds_euri', 'source_ve_path', 'feature', 'embeds_referring_origin');
+        doc.addEventListener('contextmenu', () => {
+          if (window.location.pathname === '/watch') { // Clean copying video urls (contextmenu) on youtube.com
+            const videoCM = doc.getElementsByClassName('ytp-contextmenu')[0].getElementsByClassName('ytp-menuitem');
+            videoCM[1].addEventListener('click', () => { navigator.clipboard.writeText(pageURL); });
+            const vid = doc.getElementsByTagName('video')[0];
+            const url = new URL(pageURL); url.searchParams.set('t', vid.currentTime.toFixed(0));
+            videoCM[2].addEventListener('click', () => { navigator.clipboard.writeText(url.toString()); });
+          }
+        });
         break;
       case pageHost.includes('reddit.com'):
         commonParams.push('embed_host_url');
@@ -249,15 +261,24 @@
         commonParams.push('ref_cta', 'ref_loc', 'ref_page');
         break;
       case pageHost.includes('microsoft.com'):
-        commonParams.push('response_mode');
+        commonParams.push('response_mode', 'form', 'exp');
+        break; //
+      case pageHost.includes('linkedin.com'):// eslint-disable-next-line max-len
+        commonParams.push('trk', 'trkInfo', 'original_referer', 'origin', 'upsellOrderOrigin', 'lipi', 'desktopBackground', 'profileFormEntryPoint', 'entityUrn', 'veh', 'miniCompanyUrn');
+        document.addEventListener('DOMContentLoaded', () => {
+          blockClickEvents(commonParams, 8500); deferredCleanLinks(commonParams, DELAY_TIME.normal * 2);
+        });
+        break;
+      case pageHost.includes('twitter.com'):
+        commonParams.push('screen_name');
         break;
       case pageHost.includes('zhihu.com'):
         commonParams.push('search_source', 'hybrid_search_source', 'hybrid_search_extra');
         intervalID = setInterval(() => { document.querySelector('.Modal-wrapper').style.visibility = 'hidden'; }, 10);
-        clearTimeout(timeoutID); timeoutID = setTimeout(() => { clearInterval(intervalID); }, 2000);
+        timeoutID = setTimeout(() => { clearInterval(intervalID); clearTimeout(timeoutID); }, 2000);
         break;
       case /(163|126|yeah).(com|net)$/.test(pageHost):
-        commonParams.push('scene', 'session_id', 't', 'fromDlpro', 'dltype');
+        commonParams.push('scene', 'session_id', 'fromDlpro', 'dltype');
         break;
       case pageHost.includes('weibo.com'):
         commonParams.push('mark_id', 'entry', '_rand', 'sudaref', 'refer', 'band_rank', 'gid', 'ua');
@@ -277,38 +298,37 @@
       case pageHost.includes('douban.com'):
         commonParams.push('target_user_id', 'from_', 'dcs', 'dcm', 'dt_time_source', 'channel');
         break;
+      case pageHost.includes('imdb.com'):
+        commonParams.push('rf', 'imdbPageAction');
+        break;
       case pageHost.includes('xda-developers.com'):
         commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign', 'newsletter_popup');
         break;
       case pageHost.includes('cctv.com'):
         commonParams.push('toc_style_id', 'share_to', 'track_id');
         break;
-      case pageHost.includes('imdb.com'):
-        commonParams.push('rf', 'imdbPageAction');
-        break;
       default: break;
     }
-    const params = commonParams; restoreState(params);
-    window.addEventListener('urlchange', () => { restoreState(params); });
+    const params = commonParams; restoreState(params); cleanLinks(params);
     document.addEventListener('DOMContentLoaded', () => {
       cleanLinks(params);
       const divs = doc.getElementsByTagName('div');
       for (let i = 0; i < divs.length; i += 1) {
-        if (divs[i].className) {
-          divs[i].addEventListener('click', () => { deferredCleanLinks(params, DELAY_TIME.normal); }, true);
+        if (divs[i].className) { // eslint-disable-next-line max-len
+          divs[i].addEventListener('click', () => { cleanLinks(params); deferredCleanLinks(params, DELAY_TIME.normal); }, true);
         }
       }
       const btns = doc.getElementsByTagName('button');
       for (let i = 0; i < btns.length; i += 1) {
-        if (btns[i].className) {
-          btns[i].addEventListener('click', () => { deferredCleanLinks(params, DELAY_TIME.normal); }, true);
+        if (btns[i].className) { // eslint-disable-next-line max-len
+          btns[i].addEventListener('click', () => { cleanLinks(params); deferredCleanLinks(params, DELAY_TIME.normal); }, true);
         }
-      }
-      deferredCleanLinks(params, DELAY_TIME.normal * 2);
+      } blockClickEvents(commonParams, 1200);
+      deferredCleanLinks(params, DELAY_TIME.normal * 2); deferredCleanLinks(params, DELAY_TIME.normal * 7);
     });
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-      if (scrolls - topScroll > 100) { cleanLinks(params); topScroll = scrolls; }
+      if (scrolls - topScroll > 120) { cleanLinks(params); topScroll = scrolls; }
     };
     return params;
   }
@@ -321,7 +341,6 @@
   }
   // Remove Bilibili Annoyances [Login popups, Ads]
   function removeBiliAnnoyances(delayTime) {
-    clearTimeout(timeoutID);
     timeoutID = setTimeout(() => {
       let index = 0;
       do {
@@ -340,7 +359,7 @@
         doc.getElementsByClassName('right-entry-item')[0].addEventListener('click', () => {
           window.open('https://passport.bilibili.com/login');
         });
-      }
+      } clearTimeout(timeoutID);
     }, delayTime);
   }
   // block clicking events (link, button, li)
@@ -352,15 +371,16 @@
           const isLinkJump = links[i].classList.contains('jump-link');
           const isLinkJumpVideo = links[i].classList.contains('video-time') || links[i].classList.contains('video');
           if (!(isLinkJump && isLinkJumpVideo)) {
-            links[i].addEventListener('click', (e) => { e.stopImmediatePropagation(); }, true);
-            links[i].addEventListener('contextmenu', (e) => { e.stopPropagation(); }, true); // Block tracking events on context menu
+            links[i].addEventListener('click', (e) => { e.stopImmediatePropagation(); }, false);
+            links[i].addEventListener('contextmenu', (e) => { e.stopImmediatePropagation(); }, false); // Block tracking events on context menu
           }
         }
       }
     }
     function deferredBlockBevents(delayTime) {
-      clearTimeout(timeoutID);
-      timeoutID = setTimeout(() => { cleanLinks(bilibiliParams); removeBiliAnnoyances(0); blockBLinkEvents(); }, delayTime);
+      timeoutID = setTimeout(() => {
+        cleanLinks(bilibiliParams); removeBiliAnnoyances(0); blockBLinkEvents(); clearTimeout(timeoutID);
+      }, delayTime);
     }
     deferredBlockBevents(DELAY_TIME.fast);
     const buttons = doc.getElementsByTagName('button');
@@ -377,10 +397,10 @@
     }
   }
   function deferredBlockBClickEvents(delayTime) {
-    restoreState(bilibiliParams); clearTimeout(timeoutID);
-    timeoutID = setTimeout(() => { blockBClickEvents(); }, delayTime);
+    restoreState(bilibiliParams);
+    timeoutID = setTimeout(() => { blockBClickEvents(); clearTimeout(timeoutID); }, delayTime);
   }
-  // Loop execution when mouse moving
+  // Loop execution when the mouse moves
   function bilibiliListenMoving() {
     doc.addEventListener('DOMContentLoaded', () => {
       let x = 0; let y = 0;
@@ -397,7 +417,7 @@
     window.onscroll = () => {
       // Current position
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-      if (scrolls - topScroll > 100) {
+      if (scrolls - topScroll > 120) {
         restoreState(bilibiliParams); cleanLinks(bilibiliParams); removeBiliAnnoyances(0); blockBClickEvents();
         topScroll = scrolls;
       }
@@ -429,14 +449,14 @@
     // search input area
     if (doc.querySelector('.search-input-el')) {
       doc.querySelector('.search-input-el').addEventListener('click', () => {
-        clearTimeout(timeoutID); timeoutID = setTimeout(() => { blockSearchEvents(); }, DELAY_TIME.fast);
+        timeoutID = setTimeout(() => { blockSearchEvents(); clearTimeout(timeoutID); }, DELAY_TIME.fast);
       }, true);
     }
 
     // clear icon
     if (doc.querySelector('.clear-icon')) {
       doc.querySelector('.clear-icon').addEventListener('click', () => {
-        clearTimeout(timeoutID); timeoutID = setTimeout(() => { blockSearchEvents(); }, DELAY_TIME.fast);
+        timeoutID = setTimeout(() => { blockSearchEvents(); clearTimeout(timeoutID); }, DELAY_TIME.fast);
       }, true);
     }
   }
@@ -461,16 +481,14 @@
           deferredBlockBClickEvents(bilibiliParams, DELAY_TIME.fast);
         }, true);
       }
-      // Clean copying url (share copy)
-      let url; let toolBar; let sharInner; let sharOuter;
+      // Clean copying of URLs (share copy)
+      let toolBar; let sharInner; let sharOuter;
       if (/^\/video\//.test(window.location.pathname)) {
-        url = new URL(window.location.href);
         toolBar = '#arc_toolbar_report'; sharOuter = 'share-btn-outer'; sharInner = 'share-btn-inner';
       } else if (/^\/bangumi\//.test(window.location.pathname)) {
-        url = new URL(window.location.href);
         toolBar = '.toolbar'; sharOuter = 'share-container-id'; sharInner = 'link_copy';
       }
-      let vid;
+      let vid; const url = new URL(window.location.href);
       doc.querySelector(toolBar).addEventListener('mousemove', () => {
         doc.getElementById(sharOuter).addEventListener('click', () => {
           navigator.clipboard.writeText(`${doc.title}  ${pageURL}`);
@@ -507,7 +525,6 @@
         }
       }
     };
-    clearTimeout(timeoutID);
     timeoutID = setTimeout(() => {
       const navis = doc.getElementsByClassName('tabs__tag-item'); // cat
       for (let i = 0; i < navis.length; i += 1) {
@@ -518,7 +535,7 @@
         tabItems[i].addEventListener('click', () => {
           blockBClickEvents(); deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
         }, true);
-      }
+      } clearTimeout(timeoutID);
     }, delayTime);
     intervalID = setInterval(livePopupBlock(BlockLivePopups), DELAY_TIME.normal * 2);
     timeoutID = setTimeout(() => { clearInterval(intervalID); clearTimeout(timeoutID); }, DELAY_TIME.slow + 3000 * 300);
@@ -585,7 +602,7 @@
     function blockCSDNEvents() {
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
-        if (links[i].href !== '') { links[i].addEventListener('click', (e) => { e.stopPropagation(); }, true); }
+        if (links[i].href !== '') { links[i].addEventListener('click', (e) => { e.stopImmediatePropagation(); }, false); }
       }
     }
     doc.onmousemove = (e) => {
@@ -599,12 +616,14 @@
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Ali Sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanAliSites() {
     restoreState(aliParams); cleanLinks(aliParams); deferredCleanLinks(aliParams, DELAY_TIME.slow);
-    blockClickEvents(DELAY_TIME.fast);
+    doc.addEventListener('DOMContentLoaded', () => { blockClickEvents(aliParams, DELAY_TIME.fast); });
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-      if (scrolls - topScroll > 100) { cleanLinks(aliParams); blockClickEvents(); topScroll = scrolls; }
+      if (scrolls - topScroll > 120) { cleanLinks(aliParams); blockClickEvents(aliParams, 0); topScroll = scrolls; }
     };
-    doc.addEventListener('mousemove', (e) => { if (e.clientY < 120) { cleanLinks(aliParams); blockClickEvents(); } });
+    doc.addEventListener('mousemove', (e) => {
+      if (e.clientY < 120) { cleanLinks(aliParams); blockClickEvents(aliParams, 0); }
+    });
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Custom clean ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   // Youku, Douyin, Amazon
@@ -616,8 +635,9 @@
         cleanLinks(siteParams); x = e.clientX; y = e.clientY;
       }
     });
-    doc.addEventListener('mousedown', (e) => { cleanLinks(siteParams); e.stopPropagation(); }, false);
+    doc.addEventListener('mousedown', (e) => { cleanLinks(siteParams); e.stopImmediatePropagation(); }, false);
   }
+  // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Main Funtion ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   (() => {
     // Menu language (May not change properly due to browser settings)
     let MenuClean; let MenuAddParams; let InputTitle; let invalidFormat; let MenuRemoveParam; let noParam;
@@ -627,8 +647,8 @@
         invalidFormat = '无效的参数格式 '; MenuRemoveParam = '移除一个手动添加的参数（页面刷新后生效）'; noParam = '无此参数';
         break;
       case 'zh-TW' || 'zh-HK':
-        MenuClean = '手動清理連結'; MenuAddParams = '添加自定義參數'; InputTitle = '請輸入单个指定的參數（僅支持字母，下劃綫與方括號）';
-        invalidFormat = '無效的引數格式 '; MenuRemoveParam = '移除一個手動添加的參數 （頁面刷新後生效）'; noParam = '無此參數';
+        MenuClean = '手動清理鏈接'; MenuAddParams = '添加自定義参数'; InputTitle = '請輸入單個指定的參數（僅支持字母，下劃線與方括號）';
+        invalidFormat = '無效的參數格式 '; MenuRemoveParam = '移除一個手動添加的參數（頁面刷新後生效）'; noParam = '無此參數';
         break;
       default: // English and others
         MenuClean = 'Manually retry links cleaning'; MenuAddParams = 'Add custom param';
@@ -637,22 +657,22 @@
         MenuRemoveParam = 'Remove a custom added param (Effect after refresh)'; noParam = 'No such parameter.';
         break;
     }
-    // Add custom params from Script menu (Submenu of addon)
+    // Add custom params from the Script menu (Submenu of addons)
     function addCustomParam(inputParam) {
       if (/^[a-zA-Z[\]_]*$/.test(inputParam)) {
         let list;
         // eslint-disable-next-line no-undef
-        if (!GM_getValue(pageHost)) { list = []; } else { list = GM_getValue(pageHost); }
+        if (GM_getValue(pageHost)) { list = GM_getValue(pageHost); } else { list = []; }
         // eslint-disable-next-line no-undef
         if (inputParam) { list.push(inputParam); GM_setValue(pageHost, list); }
         list.forEach((v) => { if (!commonParams.includes(v)) { commonParams.push(v); } });
       } else { alert(invalidFormat); }
     }
-    function removeCustomAddedParam(inputParam) { // Remove a parameter that have added from script menu
+    function removeCustomAddedParam(inputParam) { // Remove a parameter that has been added from the script menu
       if (inputParam !== null && inputParam !== undefined) {
         let list;
         // eslint-disable-next-line no-undef
-        if (!GM_getValue(pageHost)) { list = []; } else { list = GM_getValue(pageHost); }
+        if (GM_getValue(pageHost)) { list = GM_getValue(pageHost); } else { list = []; }
         if (list.includes(inputParam)) { // eslint-disable-next-line no-undef
           list = list.filter((item) => item !== inputParam); GM_setValue(pageHost, list);
         } else { alert(noParam); }
@@ -708,15 +728,24 @@
         break;
     }
     // eslint-disable-next-line no-undef
-    GM_registerMenuCommand(MenuClean, () => { console.log(siteParams); cleanLinks(siteParams); }, 'C'); // Menu: Retry clean links
-    window.onkeydown = (e) => { // [Shift + Alt + X] 
-      if (e.key === 'X' && e.shiftKey && e.altKey) { restoreState(siteParams); cleanLinks(siteParams); }
-    };
+    GM_registerMenuCommand(MenuClean, () => { // Menu: Retry clean all links
+      restoreState(siteParams); cleanLinks(siteParams); console.log(siteParams);
+    }, 'C');
+    window.addEventListener('urlchange', () => { restoreState(siteParams); cleanLinks(siteParams); });
+    window.addEventListener('keydown', (e) => { // [Alt + Shift + X] 
+      if (e.key === 'X' && e.altKey && e.shiftKey) { restoreState(siteParams); cleanLinks(siteParams); }
+    });
   })();
 })();
 
 /*
 # Changelog
+v0.6.4 2023
+- Reduce event blocking scope that binds to elements `<a>` (capturing >> bubbling).
+- Clean all tracking params on `linkedin|tmall.com`, block tracking events on `linkedin.com`.
+- Clean copy of video urls on `youtube.com` (unshorten without tracking params).
+- Other improvements.
+
 v0.6.3 2023.05.26  
 - Description optimisation (Script menu).
 - Script optimisation, update excludes.
