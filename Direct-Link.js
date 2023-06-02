@@ -28,6 +28,7 @@
 // @match        *://union-click.jd.com/*
 // @match        *://*.tmall.com/*
 // @match        *://s.click.taobao.com/*
+// @match        *://s.click.tmall.com/*
 // @match        *://wiki.biligame.com/*
 // @match        *://*.linkstars.com/*
 // @match        *://tieba.baidu.com/*
@@ -39,7 +40,10 @@
 // ==/UserScript==
 /*
 ## Main features
-- **Replace the redirect links with direct links** `(v0.1.3~)`
+- Replace the redirect links with direct links.
+
+## Additional features (via the script menu)
+- Manually replace the links. `(v0.1.3~)`
 
 ## Currently supported sites
 - youtube.com
@@ -59,12 +63,12 @@
 - vk.com
 - deviantart.com
 - tmall.com (goto)
+- linkstars.com (Prevent redirection)
+- union-click.jd.com (Prevent redirection)
+- s.click.(tmall|taobao).com (Prevent redirection)(beta)
 - wiki.biligame.com
 - tieba.baidu.com
 - linkedin.com
-- linkstars.com (Prevent redirecting)
-- union-click.jd.com (Prevent redirection)
-- s.click.tmall.com (Prevent redirection)(beta)
 */
 (() => {
   const DELAY_TIME = { fast: 600, normal: 1000, slow: 2500 };
@@ -98,7 +102,7 @@
                 if (params.has(k) && links[i].href !== decodeURIComponent(params.get(k))) {
                   links[i].href = decodeURIComponent(params.get(k));
                 }
-              }); // pixiv.net | deviantart.com              
+              }); // pixiv.net | deviantart.com
               if (/jump.php|outgoing/.test(links[i].pathname)) {
                 if (links[i].href !== decodeURIComponent(links[i].search.substring(1, links[i].href.length))) {
                   links[i].href = decodeURIComponent(links[i].search.substring(1, links[i].href.length));
@@ -230,8 +234,10 @@
         INDEX_URL.push('u'); indexParam = INDEX_URL;
         break;
       case /(union-click.jd.com|www.linkstars.com)$/.test(pageHost):
-        window.stop(); indexParam = INDEX_REDIRECTTO;
-        window.location.replace(decodeURIComponent(new URL(pageURL).searchParams.get(INDEX_TO)));
+        indexParam = INDEX_TO;
+        if (new URL(pageURL).searchParams.has(indexParam)) {
+          window.stop(); window.location.replace(decodeURIComponent(new URL(pageURL).searchParams.get(indexParam)));
+        }
         break;
       default: indexParam = INDEX_REDIRECTTO; console.log('default'); break;
     }
@@ -246,14 +252,15 @@
     };
   })();
 })();
+
 /*
-v0.2.0 
+v0.2.0  2023.06.02
 - Improve replacing efficiency on youtube.
 - Replacing more links on xda (a9yw.net|pxf.io), tieba.baidu.com (jump.baidu.com), linkedin.com.
 - Prevent redirection on `s.click.tmall.com` (beta).
 - Code reduction and other improvements.
 
-v0.1.9 2023.05.24
+v0.1.9 2023.05.24  
 - Directing for wiki.biligame.com, www.linkstars.com.
 - Performance optimisation and bug fixes.
 
