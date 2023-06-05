@@ -65,11 +65,12 @@
 - tmall.com (goto)
 - linkstars.com (Prevent redirection)
 - union-click.jd.com (Prevent redirection)
-- s.click.(tmall|taobao).com (Prevent redirection)(beta)
+- s.click.(tmall|taobao).com (Prevent redirection)
 - wiki.biligame.com
 - tieba.baidu.com
 - linkedin.com
 */
+
 (() => {
   const DELAY_TIME = { fast: 600, normal: 1000, slow: 2500 };
   let timeoutID;
@@ -78,26 +79,25 @@
   const INDEX_ADJUST = ['redirect', 'fallback']; // adjust
   const INDEX_URL = ['url'];
   const INDEX_TO = ['to']; // jianshu, vk
-  const INDEX_YOUTUBE_Q = ['q']; // youtube
-  const INDEX_REDIRECTTO = ['redirectTo']; // epicgames
+  const INDEX_Q = ['q']; // youtube
   const INDEX_GOTO = ['goto']; // Tmall (alipay.com/?goto)
-  // eslint-disable-next-line max-len
-  const regStr = '(youtube|steamcommunity|zhihu|pixiv|jianshu|juejin|leetcode|oschina|gitee|sspai|gcores|alipay|epicgames'
-    + '|linkedin|vk|adjust).(com|hk|cn|net)$|game.bilibili.com$';
+  const regStr = '(youtube|steamcommunity|zhihu|jianshu|juejin|leetcode|oschina|gitee|sspai|gcores|alipay'
+    + '|epicgames|linkedin|vk|adjust|game.bilibili).(com|net|cn|hk)$';
   let siteRegex = new RegExp(regStr);
   const pageHost = window.location.hostname;
-  const pageURL = window.location.href;
+  const pageParams = window.location.search;
   const doc = document;
+
   let linkDirect; // Replace with direct url
   switch (true) {
-    case /(deviantart.com|pixiv.net)$/.test(pageHost):
+    case /(pixiv.net|deviantart.com)$/.test(pageHost):
+      siteRegex = /(pixiv.net|deviantart.com)$/;
       linkDirect = (directURLParams, delayTime) => {
         timeoutID = setTimeout(() => {
           const links = doc.getElementsByTagName('a');
           for (let i = 0; i < links.length; i += 1) {
             if (siteRegex.test(links[i].hostname)) {
-              const url = new URL(links[i].href);
-              const params = url.searchParams;
+              const params = new URLSearchParams(links[i].search);
               directURLParams.forEach((k) => {
                 if (params.has(k) && links[i].href !== decodeURIComponent(params.get(k))) {
                   links[i].href = decodeURIComponent(params.get(k));
@@ -120,16 +120,15 @@
           const links = doc.getElementsByTagName('a');
           for (let i = 0; i < links.length; i += 1) {
             if (siteRegex.test(links[i].hostname)) {
-              const url = new URL(links[i].href);
-              const params = url.searchParams;
+              const params = new URLSearchParams(links[i].search);
               directURLParams.forEach((k) => {
                 if (params.has(k) && links[i].href !== decodeURIComponent(params.get(k))) {
                   links[i].href = decodeURIComponent(params.get(k));
                 }
               });
               let realLink = links[i].href;
-              if (/http/.test(links[i].search)) { realLink = links[i].search.substring(1, links[i].href.length); }
-              if (/http/.test(links[i].pathname)) {
+              if (/https?/.test(links[i].search)) { realLink = links[i].search.substring(1, links[i].href.length); } else
+              if (/https?/.test(links[i].pathname)) {
                 realLink = links[i].pathname.substring(links[i].pathname.lastIndexOf('http'), links[i].href.length);
               }
               if (links[i].href !== decodeURIComponent(realLink)) { links[i].href = decodeURIComponent(realLink); }
@@ -156,8 +155,7 @@
           const links = doc.getElementsByTagName('a');
           for (let i = 0; i < links.length; i += 1) {
             if (siteRegex.test(links[i].hostname)) {
-              const url = new URL(links[i].href);
-              const params = url.searchParams;
+              const params = new URLSearchParams(links[i].search);
               directURLParams.forEach((k) => {
                 if (params.has(k) && links[i].href !== decodeURIComponent(params.get(k))) {
                   links[i].href = decodeURIComponent(params.get(k));
@@ -171,16 +169,16 @@
   }
   // Youtube additional steps
   function youtubeDirect() {
-    function run() {
-      linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast);
+    function run(delayTime) {
+      linkDirect(INDEX_Q, DELAY_TIME.fast); linkDirect(INDEX_Q, DELAY_TIME.normal * 2);
       timeoutID = setTimeout(() => {
-        linkDirect(INDEX_YOUTUBE_Q, 0);
-        doc.addEventListener('click', () => { linkDirect(INDEX_YOUTUBE_Q, DELAY_TIME.fast); }); clearTimeout(timeoutID);
-      }, DELAY_TIME.normal * 2);
-    }
-    doc.addEventListener('DOMContentLoaded', () => { run(); }); doc.onvisibilitychange = () => { run(); };
+        linkDirect(INDEX_Q, 0);
+        doc.addEventListener('click', () => { linkDirect(INDEX_Q, DELAY_TIME.fast); }); clearTimeout(timeoutID);
+      }, delayTime);
+    } run(2000);
+    doc.addEventListener('DOMContentLoaded', () => { run(1000); }); doc.onvisibilitychange = () => { run(1500); };
   }
-  // Main execution
+  // Main function
   (() => {
     let indexParam;
     // Menu language (May not change properly due to browser settings)
@@ -207,14 +205,13 @@
         indexParam = INDEX_ADJUST; linkDirect(indexParam, DELAY_TIME.normal * 2);
         break;
       case pageHost.includes('youtube.com'):
-        indexParam = INDEX_YOUTUBE_Q; youtubeDirect();
+        indexParam = INDEX_Q; youtubeDirect();
         break;
       case pageHost.includes('tmall.com') || pageHost.includes('s.click.taobao.com'):
         indexParam = INDEX_GOTO;
-        if (/^s.click.(tmall|taobao).com$/.test(window.location.hostname)
-        && new URL(window.location.href).searchParams.has('tar')) {
+        if (/^s.click.(tmall|taobao).com$/.test(window.location.hostname) && new URLSearchParams(pageParams).has('tar')) {
           alert();
-          window.stop(); const targetLink = decodeURIComponent(new URL(window.location.href).searchParams.get('tar'));
+          window.stop(); const targetLink = decodeURIComponent(new URLSearchParams(window.location.search).get('tar'));
           if (/^https?:\/\//.test(targetLink)) { window.location.replace(targetLink); }
         }
         break;
@@ -225,7 +222,7 @@
         indexParam = INDEX_TO;
         break;
       case pageHost.includes('epicgames.com'):
-        indexParam = INDEX_REDIRECTTO;
+        indexParam = ['redirectTo'];
         break;
       case pageHost.includes('oschina.net'):
         INDEX_URL.push('goto_page'); indexParam = INDEX_URL;
@@ -234,12 +231,12 @@
         INDEX_URL.push('u'); indexParam = INDEX_URL;
         break;
       case /(union-click.jd.com|www.linkstars.com)$/.test(pageHost):
-        indexParam = INDEX_TO;
-        if (new URL(pageURL).searchParams.has(indexParam)) {
-          window.stop(); window.location.replace(decodeURIComponent(new URL(pageURL).searchParams.get(indexParam)));
+        indexParam = INDEX_TO; // eslint-disable-next-line max-len
+        if (new URLSearchParams(pageParams).has(indexParam) && /^https?/.test(new URLSearchParams(pageParams).get(indexParam))) {
+          window.stop(); window.location.replace(decodeURIComponent(new URLSearchParams(pageParams).get(indexParam)));
         }
         break;
-      default: indexParam = INDEX_REDIRECTTO; console.log('default'); break;
+      default: indexParam = ['']; break;
     }
     doc.addEventListener('DOMContentLoaded', () => { linkDirect(indexParam, DELAY_TIME.normal); });
     // linkDirect(indexParam, DELAY_TIME.normal);
@@ -254,6 +251,10 @@
 })();
 
 /*
+v0.2.1 2023
+- Fix an issue that caused links on `deviantart.com` will not be replaced properly, add the site to `siteRegex`.
+- Minor improvements.
+
 v0.2.0  2023.06.02
 - Improve replacing efficiency on youtube.
 - Replacing more links on xda (a9yw.net|pxf.io), tieba.baidu.com (jump.baidu.com), linkedin.com.
