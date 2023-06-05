@@ -253,6 +253,7 @@
   }
   function deferredCleanLinks(siteParams, delayTime) {
     const tid = setTimeout(() => {
+      console.log('aaa');
       restoreState(siteParams); cleanLinks(siteParams); clearTimeout(tid);
     }, delayTime);
   }
@@ -660,7 +661,11 @@
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Youtube ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanYoutube() {
+    doc.addEventListener('DOMContentLoaded', () => {
+      deferredCleanLinks(commonParams, DELAY_TIME.normal); blockClickEvents(commonParams, 0);
+    });
     doc.addEventListener('contextmenu', () => {
+      cleanLinks(commonParams);
       if (pagePath === '/watch' || pagePath.includes('/embed/')) { // Clean copying of video urls after right-click at the main video on `youtube.com`
         const videoCM = doc.getElementsByClassName('ytp-contextmenu')[0].getElementsByClassName('ytp-menuitem');
         videoCM[1].addEventListener('click', () => { navigator.clipboard.writeText(pageURL); });
@@ -676,7 +681,13 @@
         videoCM[3].addEventListener('click', () => { navigator.clipboard.writeText(url.toString()); });
       }
     });
-    if (pagePath === '/results') { doc.addEventListener('pointerenter', (e) => { e.stopPropagation(); }, true); }
+    if (pagePath === '/results') {
+      doc.addEventListener('pointerenter', (e) => { e.stopPropagation(); cleanLinks(commonParams); }, true);
+    }
+    window.onscroll = () => {
+      const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
+      if (scrolls - topScroll > 120) { cleanLinks(commonParams); topScroll = scrolls; }
+    };
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Custom clean ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   // Youku, Douyin, Amazon
