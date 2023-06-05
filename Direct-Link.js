@@ -245,7 +245,8 @@
     // Executiing until it scrolls to the bottom of the page
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || document.body.scrollTop;
-      if (scrolls - topScroll > 100) { linkDirect(indexParam, 0); topScroll = scrolls; }
+      if (scrolls <= 200) { linkDirect(indexParam, 0); topScroll = scrolls; console.log(scrolls); }
+      if (scrolls - topScroll > 100 && scrolls > 200) { linkDirect(indexParam, 0); topScroll = scrolls; }
     };
   })();
 })();
