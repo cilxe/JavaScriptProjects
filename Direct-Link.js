@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Direct Link
 // @name:zh-CN   重定向链接转直链
-// @namespace    https://github.com/cilxe/JavaScriptProjects
-// @version      0.2.0
 // @description  Replace the redirect links with direct links
 // @description:zh-CN  将页面内所有重定向式的链接替换为直链
+// @namespace    https://github.com/cilxe/JavaScriptProjects
+// @version      0.2.1
 // @author       cilxe
 // @match        *://*.youtube.com/*
 // @match        *://*.zhihu.com/*
@@ -73,9 +73,8 @@
 
 (() => {
   const DELAY_TIME = { fast: 600, normal: 1000, slow: 2500 };
-  let timeoutID;
   let topScroll = 0;
-  const INDEX_TARGET = ['target']; // juejin, leet-code, gitee, sspai, gcores, zhihu  
+  const INDEX_TARGET = ['target']; // juejin, leet-code, gitee, sspai, gcores, zhihu
   const INDEX_ADJUST = ['redirect', 'fallback']; // adjust
   const INDEX_URL = ['url'];
   const INDEX_TO = ['to']; // jianshu, vk
@@ -93,7 +92,7 @@
     case /(pixiv.net|deviantart.com)$/.test(pageHost):
       siteRegex = /(pixiv.net|deviantart.com)$/;
       linkDirect = (directURLParams, delayTime) => {
-        timeoutID = setTimeout(() => {
+        const timeoutID = setTimeout(() => {
           const links = doc.getElementsByTagName('a');
           for (let i = 0; i < links.length; i += 1) {
             if (siteRegex.test(links[i].hostname)) {
@@ -116,7 +115,7 @@
     case /xda.developers.com$/.test(pageHost):
       siteRegex = /(shop-links.co|anrdoezrs.net|a9yw.net|pxf.io|viglink.com)$/;
       linkDirect = (directURLParams, delayTime) => {
-        timeoutID = setTimeout(() => {
+        const timeoutID = setTimeout(() => {
           const links = doc.getElementsByTagName('a');
           for (let i = 0; i < links.length; i += 1) {
             if (siteRegex.test(links[i].hostname)) {
@@ -139,7 +138,7 @@
       break;
     case /^tieba.baidu.com$/.test(pageHost):
       linkDirect = (directURLParams, delayTime) => {
-        timeoutID = setTimeout(() => {
+        const timeoutID = setTimeout(() => {
           const links = doc.getElementsByClassName('j-no-opener-url');
           for (let i = 0; i < links.length; i += 1) {
             if (/^jump.bdimg.com$/.test(links[i].hostname) && links[i].innerText.includes('http')) {
@@ -151,7 +150,7 @@
       break;
     default:
       linkDirect = (directURLParams, delayTime) => {
-        timeoutID = setTimeout(() => {
+        const timeoutID = setTimeout(() => {
           const links = doc.getElementsByTagName('a');
           for (let i = 0; i < links.length; i += 1) {
             if (siteRegex.test(links[i].hostname)) {
@@ -171,7 +170,7 @@
   function youtubeDirect() {
     function run(delayTime) {
       linkDirect(INDEX_Q, DELAY_TIME.fast); linkDirect(INDEX_Q, DELAY_TIME.normal * 2);
-      timeoutID = setTimeout(() => {
+      const timeoutID = setTimeout(() => {
         linkDirect(INDEX_Q, 0);
         doc.addEventListener('click', () => { linkDirect(INDEX_Q, DELAY_TIME.fast); }); clearTimeout(timeoutID);
       }, delayTime);
@@ -210,7 +209,6 @@
       case pageHost.includes('tmall.com') || pageHost.includes('s.click.taobao.com'):
         indexParam = INDEX_GOTO;
         if (/^s.click.(tmall|taobao).com$/.test(window.location.hostname) && new URLSearchParams(pageParams).has('tar')) {
-          alert();
           window.stop(); const targetLink = decodeURIComponent(new URLSearchParams(window.location.search).get('tar'));
           if (/^https?:\/\//.test(targetLink)) { window.location.replace(targetLink); }
         }
@@ -245,18 +243,19 @@
     // Executiing until it scrolls to the bottom of the page
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || document.body.scrollTop;
-      if (scrolls <= 200) { linkDirect(indexParam, 0); topScroll = scrolls; console.log(scrolls); }
+      if (scrolls <= 200) { linkDirect(indexParam, 0); topScroll = scrolls; }
       if (scrolls - topScroll > 100 && scrolls > 200) { linkDirect(indexParam, 0); topScroll = scrolls; }
     };
   })();
 })();
 
 /*
-v0.2.1 2023
-- Fix an issue that caused links on `deviantart.com` will not be replaced properly, add the site to `siteRegex`.
-- Minor improvements.
+v0.2.1 2023.06.07  
+- Fix an issue where the replacements weren't active on `deviantart.com`, which is missing on `siteRegex`.
+- Fix most timeout issues.
+- Minor issue fixes and optimisations .
 
-v0.2.0  2023.06.02
+v0.2.0  2023.06.02  
 - Improve replacing efficiency on youtube.
 - Replacing more links on xda (a9yw.net|pxf.io), tieba.baidu.com (jump.baidu.com), linkedin.com.
 - Prevent redirection on `s.click.tmall.com` (beta).
