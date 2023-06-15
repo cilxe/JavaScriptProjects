@@ -126,7 +126,9 @@
                 }
               });
               let realLink = links[i].href;
-              if (/https?/.test(links[i].search)) { realLink = links[i].search.substring(1, links[i].href.length); } else
+              if (/https?/.test(links[i].search)) {
+                realLink = links[i].search.substring(1, links[i].href.length);
+              } else
               if (/https?/.test(links[i].pathname)) {
                 realLink = links[i].pathname.substring(links[i].pathname.lastIndexOf('http'), links[i].href.length);
               }
@@ -141,7 +143,7 @@
         const timeoutID = setTimeout(() => {
           const links = doc.getElementsByClassName('j-no-opener-url');
           for (let i = 0; i < links.length; i += 1) {
-            if (/^jump.bdimg.com$/.test(links[i].hostname) && links[i].innerText.includes('http')) {
+            if (/^jump.bdimg.com$/.test(links[i].hostname) && links[i].innerText.startsWith('http')) {
               links[i].href = links[i].innerText;
             }
           } clearTimeout(timeoutID);
@@ -203,12 +205,13 @@
       case adjust:
         indexParam = INDEX_ADJUST; linkDirect(indexParam, DELAY_TIME.normal * 2);
         break;
-      case pageHost.includes('youtube.com'):
+      case pageHost.endsWith('youtube.com'):
         indexParam = INDEX_Q; youtubeDirect();
         break;
-      case pageHost.includes('tmall.com') || pageHost.includes('s.click.taobao.com'):
+      case pageHost.endsWith('tmall.com') || pageHost.endsWith('s.click.taobao.com'):
         indexParam = INDEX_GOTO;
-        if (/^s.click.(tmall|taobao).com$/.test(window.location.hostname) && new URLSearchParams(pageParams).has('tar')) {
+        if (/^s.click.(tmall|taobao).com$/.test(window.location.hostname)
+        && new URLSearchParams(pageParams).has('tar')) {
           window.stop(); const targetLink = decodeURIComponent(new URLSearchParams(window.location.search).get('tar'));
           if (/^https?:\/\//.test(targetLink)) { window.location.replace(targetLink); }
         }
@@ -219,13 +222,13 @@
       case /(vk|jianshu).com$/.test(pageHost):
         indexParam = INDEX_TO;
         break;
-      case pageHost.includes('epicgames.com'):
+      case pageHost.endsWith('epicgames.com'):
         indexParam = ['redirectTo'];
         break;
-      case pageHost.includes('oschina.net'):
+      case pageHost.endsWith('oschina.net'):
         INDEX_URL.push('goto_page'); indexParam = INDEX_URL;
         break;
-      case pageHost.includes('xda-developers.com'):
+      case pageHost.endsWith('xda-developers.com'):
         INDEX_URL.push('u'); indexParam = INDEX_URL;
         break;
       case /(union-click.jd.com|www.linkstars.com)$/.test(pageHost):
