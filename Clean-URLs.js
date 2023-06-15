@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.6.5
+// @version            0.6.6
 // @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -38,8 +38,8 @@
 
 ## Additional features (via the script menu)
 - Manually clean up the links again. `(v0.5.2~)`
-- Add specific tracking params for the current site (host). `(v0.6.1~)`
-- Remove custom added params for the current site (host). `(v0.6.2~)`
+- Add specific tracking params for the current site (match by domain). `(v0.6.1~)`
+- Remove custom added params for the current site (match by domain). `(v0.6.2~)`
 
 ## Websites that support common cleaning
 - All websites on the internet.
@@ -58,76 +58,86 @@
 */
 (() => {
   const DELAY_TIME = { fast: 600, normal: 1000, slow: 3000 };
-  const hostRegex = /[a-z0-9-.]{1,128}\.[a-z]{2,6}$/;
-  let topScroll = 0;
   const doc = document;
   const pageHost = window.location.hostname;
   const pageURL = window.location.href;
   const pagePath = window.location.pathname;
+  let topScroll = 0;
+  const hostRegex = /[a-z0-9-.]{1,128}\.[a-z]{2,6}$/;
+  // Matches all tracking params contains with the name
+  let paramsReg = /^(spm_|from_|ref|track|trk|share_)|_from$/;
 
-  const commonParamsReg = /^(utm_|spm_|from_|ref|track|trk)/i; // Matches all tracking params contains with the name
-  // Common tracking params for all sites
-  const commonParams = [
-    'spm', 'mkt', 'from', 'page_from', 'src', 'response_type', 'source', 'alias', 'vd_source', 'redirect_uri',
-    'curator_clanid', 'snr', 'redir', // Steam
-  ];
+  const commonParams = ['spm', 'mkt', 'src', 'from', 'page_from', 'response_type', 'redirect_uri', 'source',
+    'vd_source', 'curator_clanid', 'snr', 'redir', 'alias',
+    'utm_id', 'utm_content', 'utm_source', 'utm_medium', 'utm_sources', 'utm_term', 'utm_campaign'];
+
   // Tracking or other params for certain sites
-  const bilibiliParams = ['spm_id_from', 'spm_id', 'vd_source', 'from_spmid', 'csource', 'sourceFrom',
+  const bilibiliParams = ['spm_id_from', 'spm_id', 'vd_source', 'from_spmid', 'csource',
     'hotRank', 'live_from', 'from', 'launch_id', 'msource', 'popular_rank', 'session_id', 'business',
     'sort_field', 'broadcast_type', 'is_room_feed', 'dynamicspm_id_from', 'is_live_full_webview',
-    'is_live_webview', 'refer_from', 'vt', 'from_source', 'theme', 'visit_id', 'share_source',
+    'is_live_webview', 'refer_from', 'vt', 'from_source', 'theme', 'visit_id', 'share_source', 'sourceFrom',
     'share_plat', 'share_session_id', 'share_tag', 'timestamp', 'unique_k', 'hasBack', 'noReffer',
-    'jumpLinkType', 'goFrom', 'noTitleBar'];
-  const baiduParams = ['rsv_idx', 'hisfilter', 'rsf', 'rsv_pq', 'rsv_t', 'qid', 'rsv_dl', 'sa', 'rqid', // baidu
-    'oq', 'gpc', 'usm', 'tfflag', 'ie', 'bs', 'rqlang', 'tn', 'sc_us', 'wfr', 'fenlei', 'platform',
+    'jumpLinkType', 'goFrom', 'noTitleBar', 'bsource', 'search_source', 'plat_id', 'is_preview',
+    'event_source_type', 'buvid'];
+  const baiduParams = ['rsv_idx', 'hisfilter', 'rsf', 'rsv_pq', 'rsv_t', 'qid', 'rsv_dl', // baidu
+    'oq', 'gpc', 'usm', 'tfflag', 'ie', 'bs', 'rqlang', 'tn', 'sc_us', 'wfr', 'fenlei', 'platform', 'rqid',
     'base_query', 'entry', 'qbl', 'for', 'from', 'topic_pn', 'rsp', 'rs_src', 'f', 'rsv_page', 'dyTabStr',
     'ct', 'lm', 'site', 'sites', 'fr', 'cl', 'bsst', 'lid', 'rsv_spt', 'rsv_bp', 'src', 'sfrom', 'refer',
-    'zp_fr', 'channel', 'p_from', 'n_type', 'eqid', '_at_',
+    'zp_fr', 'channel', 'p_from', 'n_type', 'eqid', '_at_', 'sa', 'pd', 'source', 'tag_key',
     'uname', 'uid', 'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', 'frwh', 'obj_id', 'fid', // tieba
     'fname', '_t', 'topic_name', 'frs', 'share_from', 'idfrom', 'tpl', 'u', 'tb_mod', 'tb_fr', 'share', 'sfc',
     'client_version', 'unique', 'is_video', 'st',
     '_wkts_', 'ai', 'ck', 'shh', // wenku
     'utm_source', 'utm_medium', 'utm_term', 'utm_campaign', 'utm_content', 'utm_id',
   ];
-  const douyinParams = ['rsv_idx', 'hisfilter', 'source', 'aid', 'enter_from', 'focus_method', 'gid', // douyin
-    'previous_page', 'extra_params',
+
+  const douyinParams = ['rsv_idx', 'hisfilter', 'source', 'aid', 'enter_from', 'focus_method', // douyin
+    'previous_page', 'extra_params', 'gid',
     'is_from_webapp', 'sender_device', 'web_id']; // tiktok
-  const csdnParams = commonParams.concat(['source', 'ops_request_misc', 'request_id', 'biz_id', 'from_wecom', 'ydreferer']);
+  const csdnParams = ['source', 'ops_request_misc', 'request_id', 'biz_id', 'from_wecom', 'ydreferer', 'usp'];
   const youkuParams = ['spm', 'scm', 'from', 's', 'playMode', 'client_id'];
-  const aliParams = [ // ali
-    'spm', 'lwfrom', 'from', 'scene', 'utm_content', 'utm_term', 'utm_source', 'utm_campaign', 'utm_medium', 'utm_id',
-    // taobao.com/tmall.com/1688.com/tmall.hk
-    'scm', 'stats_click', 'initiative_id', 'wh_pid', 'wh_random_str', 'source', 'suggest', 'suggest_query', 'pvid',
-    'iconType', 'detailSharePosition', 'traceId', 'relationId', 'union_lens', 'ref', 'ali_trackid', 'ak',
-    'topOfferIds', 'search_condition', 'industryCatId', 'tbSocialPopKey', 'bxsign', 'shareUniqueId', 'sp_abtk', 'acm',
-    'clickTrackInfo', 'wx_navbar_transparent', 'wh_weex', 'data_prefetch', 'at_iframe', 'prefetch_replace', 'wc', // lazada, trendyol
-  ];
-  const amazonParams = ['sprefix'];
+  const aliParams = [ // taobao.com/tmall.com/1688.com/tmall.hk
+    'stats_click', 'initiative_id', 'source', 'suggest', 'suggest_query', 'pvid', 'iconType', 'traceId',
+    'relationId', 'union_lens', 'ref', 'ali_trackid', 'ak', 'detailSharePosition', 'topOfferIds',
+    'search_condition', 'industryCatId', 'tbSocialPopKey', 'bxsign', 'shareUniqueId', 'sp_abtk',
+    'clickTrackInfo', 'data_prefetch', 'at_iframe', 'prefetch_replace', 'wc', // lazada, trendyol
+  ]; // 'wh_pid', 'wh_random_str', 'wx_navbar_transparent', 'wh_weex'
+  const aliParamsRegStr = '^(utm_|spm_|from_|ref|track|wh_|wx_)|'
+  + '^(spm|acm|scm|scene|from|lwfrom|disableNav|es|rootPageId)$';
+  const aliParamsReg = new RegExp(aliParamsRegStr);
+
+  const amaznParams = ['content-id', 'qid', 'crid'];
+  const amznParamsRegStr = '_ref|^(utm_|ref|pd_rd_|pf_rd_|track|sc_)|^(sprefix|ld|_encoding|ie|ds)$';
+  const amznParamsReg = new RegExp(amznParamsRegStr, 'i');
+
+  const ytParams = commonParams.concat(['embeds_referring_euri', 'embeds_euri', 'source_ve_path', 'feature',
+    'embeds_referring_origin', 'redir_token', 'pp', 'origin', 'ab_channel', 'enablejsapi', 'widgetid']);
+
   // If <true> block [Lucky Draw (The Selection)] popups on live.bilibili.com.
   const BlockLivePopups = true;
 
-  (() => { // Binds 'urlchange' event for pushState and replaceState   [https://stackoverflow.com/a/52809105]
-    const originPushState = window.history.pushState;
-    const originReplaceState = window.history.replaceState;
+  (() => { // Add custom 'urlchange' event for pushState and replaceState   [https://stackoverflow.com/a/52809105]
+    const originalPushState = window.history.pushState;
+    const originalReplaceState = window.history.replaceState;
     window.history.pushState = function pushState(...args) {
-      const newPushState = originPushState.apply(this, args);
+      const newPushState = originalPushState.apply(this, args);
       window.dispatchEvent(new Event('pushstate'));
       window.dispatchEvent(new Event('urlchange'));
       return newPushState;
     };
     window.history.replaceState = function replaceState(...args) {
-      const newReplaceState = originReplaceState.apply(this, args);
+      const newReplaceState = originalReplaceState.apply(this, args);
       window.dispatchEvent(new Event('replacestate'));
       window.dispatchEvent(new Event('urlchange'));
       return newReplaceState;
     };
   })();
-  //  Restore history state, remove redundant params (Common)
+  //  Restore history state, remove redundant parameters
   function restoreState(siteParams) {
     const url = new URL(window.location.href);
     const params = url.searchParams;
     siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-    Array.from(params.keys()).forEach((k) => { if (commonParamsReg.test(k)) { params.delete(k); } });
+    Array.from(params.keys()).forEach((k) => { if (paramsReg.test(k)) { params.delete(k); } });
     if (url.href !== window.location.href) { window.history.replaceState({}, 'Restore', url.href); }
   }
   let cleanLinks; // Clean <a> links
@@ -141,8 +151,7 @@
             const params = url.searchParams;
             if (params.has('q')) { params.set('q', links[i].innerText); } // //  1. Ali sites (decoding error)
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            const paramsRegex = /^(utm_|spm_|from_|ref|track)/i; // Matches all tracking params that contains the name
-            Array.from(params.keys()).forEach((k) => { if (paramsRegex.test(k)) { params.delete(k); } });
+            Array.from(params.keys()).forEach((k) => { if (aliParamsReg.test(k)) { params.delete(k); } });
             if (links[i].href !== url.href) { links[i].href = url.href; }
           }
         }
@@ -172,17 +181,25 @@
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
             if (links[i].href !== url.href) { links[i].href = url.href; }
           }
-          // Remove Bilibili Card Ads
-          if (links[i].hostname.endsWith('cm.bilibili.com')) { links[i].remove(); } // 3. Bilibili
-          // Clean <a> link data-url on bilibili.com/video
+          // Remove Bilibili Ads   // 3. Bilibili
+          if (links[i].hostname.endsWith('cm.bilibili.com')
+          || /right-bottom-banner|bannerAd/.test(links[i].getAttribute('id'))) {
+            links[i].remove();
+          }
+          // Clean <a> link data-url on video/bangumi of bilibili.com
           const dataLink = links[i].getAttribute('data-url');
-          if (dataLink !== null) {
-            if (dataLink.endsWith('bilibili.com') && dataLink.startsWith('//')) {
-              const dlURL = new URL(`https:${dataLink}`);
-              const dlParams = dlURL.searchParams;
+          if (/^(https?:\/\/|\/\/)[a-zA-Z0-9-.]{1,128}.[a-z]{2,6}/.test(dataLink)) {
+            let dlURL;
+            if (dataLink.startsWith('//')) {
+              dlURL = new URL(`https:${dataLink}`);
+            } else { dlURL = new URL(dataLink); }
+
+            const dlParams = dlURL.searchParams;
+            if (dlURL.hostname.endsWith('bilibili.com')) {
               siteParams.forEach((k) => { if (dlParams.has(k)) { dlParams.delete(k); } });
-              links[i].setAttribute('data-url', dlURL.href);
             }
+            if (links[i].innerText === dataLink) { links[i].innerText = dlURL.href; }
+            links[i].href = dlURL.href; links[i].target = '_blank';
           }
         }
       };
@@ -195,8 +212,7 @@
             const url = new URL(links[i].href);
             const params = url.searchParams;
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            const paramsRegex = /^(utm_|ref|pd_rd_|pf_rd_|track|sc_|ld$)/i; // Matches all tracking param-names which contains the name
-            Array.from(params.keys()).forEach((k) => { if (paramsRegex.test(k)) { params.delete(k); } });
+            Array.from(params.keys()).forEach((k) => { if (amznParamsReg.test(k)) { params.delete(k); } });
             if (links[i].href !== url.href) { links[i].href = url.href; }
           }
           if (/amazon.[a-z.]{2,6}$/.test(links[i].hostname) && links[i].pathname.startsWith('/ref')) { // 4. Amazon
@@ -205,15 +221,15 @@
         }
       };
       break;
-    case /google.[a-z.]{2,6}$|about.google/.test(pageHost):
+    case /google.[a-z.]{2,6}$|about.google$/.test(pageHost):
       cleanLinks = (siteParams) => {
-        const links = doc.getElementsByTagName('a');
+        const links = doc.getElementsByTagName('a'); const iParamsReg = paramsReg;
         for (let i = 0; i < links.length; i += 1) {
           if (hostRegex.test(links[i].hostname)) {
             const url = new URL(links[i].href);
             const params = url.searchParams;
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            Array.from(params.keys()).forEach((k) => { if (commonParamsReg.test(k)) { params.delete(k); } });
+            Array.from(params.keys()).forEach((k) => { if (iParamsReg.test(k)) { params.delete(k); } });
             if (links[i].href !== url.href) { links[i].href = url.href; }
             // Clean params at the hash of urls   // 5. Google
             if (/utm_/.test(url.hash)) {
@@ -227,13 +243,13 @@
       break;
     default:
       cleanLinks = (siteParams) => {
-        const links = doc.getElementsByTagName('a');
+        const links = doc.getElementsByTagName('a'); const iParamsReg = paramsReg;
         for (let i = 0; i < links.length; i += 1) {
           if (hostRegex.test(links[i].hostname)) {
             const url = new URL(links[i].href);
             const params = url.searchParams;
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            Array.from(params.keys()).forEach((k) => { if (commonParamsReg.test(k)) { params.delete(k); } });
+            Array.from(params.keys()).forEach((k) => { if (iParamsReg.test(k)) { params.delete(k); } });
             if (links[i].href !== url.href) { links[i].href = url.href; }
           }
         }
@@ -245,57 +261,72 @@
       restoreState(siteParams); cleanLinks(siteParams); clearTimeout(tid);
     }, delayTime);
   }
-  // Block link clicking events (Common)
+  // Block link clicking events
   function blockClickEvents(siteParams, delayTime) {
     const tid = setTimeout(() => {
       cleanLinks(siteParams);
       const handleLinkClick = () => { cleanLinks(siteParams); };
       const handleLinkCM = (e) => { e.stopImmediatePropagation(); cleanLinks(siteParams); };
-      const handleLinkClickN = () => { cleanLinks(siteParams); deferredCleanLinks(siteParams, DELAY_TIME.normal); };
+      const handleLinkClickN = () => { deferredCleanLinks(siteParams, DELAY_TIME.normal); };
       const divs = doc.getElementsByTagName('div');
       for (let i = 0; i < divs.length; i += 1) {
         if (divs[i].className) {
-          divs[i].removeEventListener('click', handleLinkClickN, true);
-          divs[i].addEventListener('click', handleLinkClickN, true);
+          divs[i].removeEventListener('click', handleLinkClickN);
+          divs[i].addEventListener('click', handleLinkClickN);
+          divs[i].removeEventListener('auxclick', handleLinkCM);
+          divs[i].addEventListener('auxclick', handleLinkCM);
+          divs[i].removeEventListener('mousedown', handleLinkClick);
+          divs[i].addEventListener('mousedown', handleLinkClick);
+          divs[i].removeEventListener('keydown', handleLinkClick);
+          divs[i].addEventListener('keydown', handleLinkClick);
         }
       }
       const btns = doc.getElementsByTagName('button');
       for (let i = 0; i < btns.length; i += 1) {
-        if (btns[i].className) { btns[i].addEventListener('click', handleLinkClickN, true); }
+        if (btns[i].className) { btns[i].addEventListener('click', handleLinkClickN); }
       }
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
         if (hostRegex.test(links[i].hostname)) {
-          links[i].removeEventListener('mousedown', handleLinkClick);
-          links[i].addEventListener('mousedown', handleLinkClick);
-          links[i].removeEventListener('keyup', handleLinkClick);
-          links[i].addEventListener('keyup', handleLinkClick);
+          links[i].removeEventListener('mousedown', handleLinkCM);
+          links[i].addEventListener('mousedown', handleLinkCM);
+          links[i].removeEventListener('keyup', handleLinkCM);
+          links[i].addEventListener('keyup', handleLinkCM);
           links[i].removeEventListener('click', handleLinkClick);
           links[i].addEventListener('click', handleLinkClick);
           links[i].removeEventListener('auxclick', handleLinkClick);
-          links[i].addEventListener('auxclick', handleLinkCM);
-          links[i].removeEventListener('contextmenu', handleLinkClick);
-          links[i].addEventListener('contextmenu', handleLinkCM); // Block tracking events on context menu
+          links[i].addEventListener('auxclick', handleLinkClick);
+          links[i].removeEventListener('contextmenu', handleLinkCM);
+          links[i].addEventListener('contextmenu', handleLinkCM);
         }
       }
       clearTimeout(tid);
     }, delayTime);
   }
-  // Hide  popups
-  function hideElement(attrs, interval, duration) {
+  // Hide elements (common)
+  function hideElement(attrs, intervals, duration, isRemove) {
     const intervalID = setInterval(() => {
-      attrs.forEach((attr) => { document.querySelector(attr).style.visibility = 'hidden'; });
-    }, interval);
+      attrs.forEach((attr) => {
+        if (document.querySelector(attr)) {
+          if (!isRemove) {
+            document.querySelector(attr).style.visibility = 'hidden';
+          } else {
+            document.querySelector(attr).remove();
+          }
+        }
+      });
+    }, intervals);
     const timeoutId = setTimeout(() => { clearInterval(intervalID); clearTimeout(timeoutId); }, duration);
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Common sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function commonClean() {
     switch (true) { // additional params for certain sites
       case /google.[a-z.]{2,6}$|about.google/.test(pageHost):
-        commonParams.push('device', 'pcampaignid', 'subid', 'hl', 'fg');
+        commonParams.push('device', 'pcampaignid', 'subid', 'hl', 'fg', 'ved', 'ei');
         break;
       case pageHost.endsWith('reddit.com'):
-        commonParams.push('embed_host_url');
+        commonParams.push('embed_host_url', 'actionSource', 'shreddit');
+        paramsReg = /^(utm_|spm_|from_|ref|track|trk|experiment_d2x_|experiment_mweb)/;
         break;
       case pageHost.endsWith('github.com'):
         commonParams.push('ref_cta', 'ref_loc', 'ref_page');
@@ -303,8 +334,26 @@
       case /(microsoft|bing|xbox).com/.test(pageHost):
         commonParams.push('response_mode', 'exp', 'FORM', 'xr', 'cat0');
         break;
-      case pageHost.endsWith('linkedin.com'):// eslint-disable-next-line max-len
-        commonParams.push('trk', 'trkInfo', 'original_referer', 'origin', 'upsellOrderOrigin', 'lipi', 'desktopBackground', 'profileFormEntryPoint', 'entityUrn', 'veh', 'miniCompanyUrn');
+      case pageHost.endsWith('linkedin.com'):
+        commonParams.push(
+          'trk',
+          'trkInfo',
+          'original_referer',
+          'origin',
+          'upsellOrderOrigin',
+          'lipi',
+          'desktopBackground',
+          'profileFormEntryPoint',
+          'entityUrn',
+          'veh',
+          'miniCompanyUrn',
+          'courseSlug',
+          'upsellTrk',
+          'upsellTrackingId',
+          'contextUrn',
+          'ct',
+          'pt',
+        );
         document.addEventListener('DOMContentLoaded', () => {
           blockClickEvents(commonParams, 8500); deferredCleanLinks(commonParams, DELAY_TIME.normal * 2);
         });
@@ -312,9 +361,12 @@
       case pageHost.endsWith('twitter.com'):
         commonParams.push('screen_name');
         break;
+      case pageHost.endsWith('music.apple.com'):
+        commonParams.push('at', 'ct', 'itscg', 'itsct');
+        break;
       case pageHost.endsWith('zhihu.com'):
-        commonParams.push('search_source', 'hybrid_search_source', 'hybrid_search_extra'); // eslint-disable-next-line max-len
-        hideElement(['.Modal-wrapper'], 50, 3500);
+        commonParams.push('search_source', 'hybrid_search_source', 'hybrid_search_extra');
+        hideElement(['.Modal-wrapper'], 50, 3500, false);
         break;
       case /(163|126|yeah).(com|net)$/.test(pageHost):
         commonParams.push('scene', 'session_id', 'fromDlpro', 'dltype');
@@ -323,13 +375,15 @@
         commonParams.push('mark_id', 'entry', '_rand', 'sudaref', 'refer', 'band_rank', 'gid', 'ua');
         break;
       case pageHost.endsWith('jd.com'):
-        commonParams.push('gx', 'ad_od', 'needRecommendFlag', 'uabt', 'd');
+        commonParams.splice(commonParams.indexOf('utm_campaign'), 1);
+        commonParams.push('gx', 'ad_od', 'needRecommendFlag', 'uabt', 'd', 'pvid');
+        paramsReg = /^(track|wxa_|spm_|from_)/;
         break;
       case pageHost.endsWith('yangkeduo.com'):
         commonParams.push('gx', 'ad_od', 'needRecommendFlag', 'uabt', 'd');
         break;
-      case pageHost.endsWith('ebay.com'):
-        commonParams.push('_trkparms', '_trksid', 'ssPageName', 'amdata');
+      case /ebay.[a-z.]{2,6}$/.test(pageHost):
+        commonParams.push('_trkparms', '_trksid', 'ssPageName', 'amdata', 'mc', 'hash', 'epid', 'var', '_from');
         break;
       case pageHost.endsWith('msn.com'): // No effect on the [Shadow Root] elements.
         commonParams.push('ocid', 'cvid', 'ei');
@@ -337,22 +391,46 @@
       case pageHost.endsWith('vk.com'):
         commonParams.push('scheme', 'initial_stats_info');
         break;
-      case pageHost.endsWith('facebook.com'): // eslint-disable-next-line max-len
-        commonParams.push('privacy_mutation_token', 'ars', 'helpref', 'search_session_id', 'entry_point', 'campaign_id', 'nav_source', 'placement', 'privacy_source', '__cft__[0]', '__tn__');
-        doc.addEventListener('mousemove', (e) => { if (e.clientY > 700) cleanLinks(commonParams); });
+      case pageHost.endsWith('facebook.com'):
+        commonParams.push(
+          'privacy_mutation_token',
+          'ars',
+          'helpref',
+          'search_session_id',
+          'entry_point',
+          'campaign_id',
+          'nav_source',
+          'placement',
+          'privacy_source',
+          '__cft__[0]',
+          '__tn__',
+        );
         break;
       case pageHost.endsWith('stackoverflow.com'):
-        commonParams.push('so_medium', 'so_source', 'so_content', 'so_term', 'so_campaign', 'so_id');
+        paramsReg = /^(utm_|spm_|from_|ref|track|trk|so_)'/;
         break;
-      case /(hoyolab|hoyoverse|mihoyo|miyoushe|mihoyogift).com$/.test(pageHost): // eslint-disable-next-line max-len
-        commonParams.push('hyl_auth_required', 'hyl_presentation_style', 'bbs_theme', 'bbs_theme_device', 'bbs_presentation_style', 'mhy_presentation_style', 'hyl_hide_status_bar', 'hyl_landscape', 'device_type', 'game_version', 'plat_type', 'visit_device');
-        hideElement(['.mhy-account-flow-dialog'], 50, 7500);
+      case /(hoyolab|hoyoverse|mihoyo|miyoushe|mihoyogift).com$/.test(pageHost):
+        commonParams.push(
+          'hyl_auth_required',
+          'hyl_presentation_style',
+          'bbs_theme',
+          'bbs_theme_device',
+          'bbs_presentation_style',
+          'mhy_presentation_style',
+          'hyl_hide_status_bar',
+          'hyl_landscape',
+          'device_type',
+          'game_version',
+          'plat_type',
+          'visit_device',
+        );
+        hideElement(['.mhy-account-flow-dialog'], 50, 7500, false);
         break;
       case pageHost.endsWith('douban.com'):
         commonParams.push('target_user_id', 'from_', 'dcs', 'dcm', 'dt_time_source', 'channel');
         break;
       case pageHost.endsWith('imdb.com'):
-        commonParams.push('rf', 'imdbPageAction');
+        commonParams.push('rf', 'imdbPageAction', 'u', 'tag');
         break;
       case pageHost.endsWith('xda-developers.com'):
         commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign', 'newsletter_popup');
@@ -390,28 +468,31 @@
         }
         index += 1;
       } while (index < 2); // bilibili login tips
-      // eslint-disable-next-line max-len
-      if (doc.getElementsByClassName('right-entry-item')[0] && doc.getElementsByClassName('right-entry-item')[0].innerText.includes('登录')) {
-        hideElement(['.lt-row', '.bili-login-card', '.bili-feed4', '.bili-mini-mask', 'is-bottom'], 50, 3500);
-        const rightEntyItems = doc.getElementsByClassName('right-entry-item'); // eslint-disable-next-line max-len
-        if (/登录/.test(rightEntyItems[0].innerText)) { rightEntyItems[0].getElementsByTagName('span')[0].outerHTML = '<a href="https://passport.bilibili.com/login" target="_blank" onmouseup="cleanLinks(bilibiliParams)">登录</a>'; }
+      if (doc.getElementsByClassName('right-entry-item')[0]
+      && doc.getElementsByClassName('right-entry-item')[0].innerText.includes('登录')) {
+        hideElement(['.lt-row', '.bili-login-card', '.bili-mini-mask', '.is-bottom'], 30, 6200, false);
+        const rightEntyItems = doc.getElementsByClassName('right-entry-item');
+        if (/登录/.test(rightEntyItems[0].innerText)) {
+          rightEntyItems[0].getElementsByTagName('span')[0] // eslint-disable-next-line max-len
+            .outerHTML = '<a href="https://passport.bilibili.com/login" target="_blank" onmouseup="cleanLinks(bilibiliParams)">登录</a>';
+        }
       } clearTimeout(tid);
     }, delayTime);
   }
   // block clicking events (link, button, li)
   function blockBClickEvents() {
+    const handleBClickBub = (e) => { e.stopImmediatePropagation(); };
     function blockBLinkEvents() {
-      const handleBClick = (e) => { e.stopImmediatePropagation(); };
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
         if (links[i].getAttribute('data-video-time') === null && hostRegex.test(links[i].hostname)) {
           const isLinkJump = links[i].classList.contains('jump-link');
           const isLinkJumpVideo = links[i].classList.contains('video-time') || links[i].classList.contains('video');
           if (!(isLinkJump && isLinkJumpVideo)) {
-            links[i].removeEventListener('click', handleBClick);
-            links[i].addEventListener('click', handleBClick);
-            links[i].removeEventListener('contextmenu', handleBClick);
-            links[i].addEventListener('contextmenu', handleBClick); // Block tracking events on context menu
+            links[i].removeEventListener('click', handleBClickBub);
+            links[i].addEventListener('click', handleBClickBub);
+            links[i].removeEventListener('contextmenu', handleBClickBub);
+            links[i].addEventListener('contextmenu', handleBClickBub);
           }
         }
       }
@@ -426,16 +507,22 @@
     const buttons = doc.getElementsByTagName('button');
     for (let i = 0; i < buttons.length; i += 1) {
       if (buttons[i].className) {
-        buttons[i].removeEventListener('click', handleClickFast, true);
-        buttons[i].addEventListener('click', handleClickFast, true);
+        buttons[i].removeEventListener('click', handleClickFast);
+        buttons[i].addEventListener('click', handleClickFast);
       }
     }
     const lines = doc.getElementsByTagName('li');
     for (let i = 0; i < lines.length; i += 1) {
       if (lines[i].className && !lines[i].classList.contains('context-sub-menu-item')) {
-        lines[i].removeEventListener('click', handleClickFast, true);
-        lines[i].addEventListener('click', handleClickFast, true);
+        lines[i].removeEventListener('click', handleClickFast);
+        lines[i].addEventListener('click', handleClickFast);
       }
+    }
+    // iframe - live
+    if (pageURL.startsWith('https://live.bilibili.com/blackboard/dropdown')) {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('click', (e) => { e.stopPropagation(); }, true);
+      });
     }
   }
   function deferredBlockBClickEvents(delayTime) {
@@ -446,9 +533,9 @@
   function bilibiliListenMoving() {
     let x = 0; let y = 0;
     if (/live.bilibili.com$/.test(pageHost) || /^https?:\/\/(www|m).bilibili.com\/(video|bangumi)/.test(pageURL)) {
-      doc.onmousemove = (e) => { if (e.clientY < 200) { cleanLinks(bilibiliParams); blockBClickEvents(); } };
+      window.onpointermove = (e) => { if (e.clientY < 200) { cleanLinks(bilibiliParams); blockBClickEvents(); } };
     } else {
-      document.onmousemove = (e) => {
+      window.onpointermove = (e) => {
         if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
           cleanLinks(bilibiliParams); blockBClickEvents(); x = e.clientX; y = e.clientY;
         }
@@ -526,22 +613,24 @@
       }
       let vid; const url = new URL(window.location.href);
       const handleWriteText = () => { navigator.clipboard.writeText(pageURL); };
-      doc.querySelector(toolBar).addEventListener('mousemove', () => {
-        doc.getElementById(sharOuter).removeEventListener('click', handleWriteText);
-        doc.getElementById(sharOuter).addEventListener('click', handleWriteText);
-        doc.getElementById(sharInner).addEventListener('click', (event) => {
-          event.stopPropagation();
-          if (doc.getElementById(sharInner).innerText.includes('精准')) {
-            if (pagePath.indexOf('/video/') === 0) {
-              vid = doc.querySelector('video') || doc.querySelector('bwp-video'); // Chrome Firefox Edge ..
-            } else if (pagePath.indexOf('/bangumi/') === 0) {
-              vid = doc.getElementsByTagName('video')[1] || doc.querySelector('bwp-video'); // Chrome Firefox Edge ..
-            }
-            url.searchParams.set('t', vid.currentTime.toFixed(2));
-            navigator.clipboard.writeText(url.toString());
-          } else { navigator.clipboard.writeText(pageURL); }
+      if (doc.querySelector(toolBar)) {
+        doc.querySelector(toolBar).addEventListener('pointermove', () => {
+          doc.getElementById(sharOuter).removeEventListener('click', handleWriteText);
+          doc.getElementById(sharOuter).addEventListener('click', handleWriteText);
+          doc.getElementById(sharInner).addEventListener('click', (event) => {
+            event.stopImmediatePropagation();
+            if (doc.getElementById(sharInner).innerText.includes('精准')) {
+              if (pagePath.indexOf('/video/') === 0) {
+                vid = doc.querySelector('video') || doc.querySelector('bwp-video'); // Chrome Firefox Edge ..
+              } else if (pagePath.indexOf('/bangumi/') === 0) {
+                vid = doc.getElementsByTagName('video')[1] || doc.querySelector('bwp-video');
+              }
+              url.searchParams.set('t', vid.currentTime.toFixed(2));
+              navigator.clipboard.writeText(url.toString());
+            } else { navigator.clipboard.writeText(pageURL); }
+          });
         });
-      });
+      }
     });
   }
   // live.bilibili.com/*
@@ -608,21 +697,16 @@
         }
       });
     }
-    cleanBDLinks(baiduParams); blockBDTrackingEvents();
+    cleanBDLinks(baiduParams); blockBDTrackingEvents(); if (pagePath === '/s') removeBDAds();
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-      if (Math.abs(scrolls - topScroll) > 150) { cleanLinks(baiduParams); topScroll = scrolls; }
-      if (pagePath === '/s') { removeBDAds(); }
+      if (scrolls - topScroll > 120) {
+        cleanLinks(baiduParams); topScroll = scrolls;
+      }
+      if (pagePath === '/s') { removeBDAds(); } // Baidu search ads
     };
-    if (pagePath === '/s') { // Baidu search ads
-      removeBDAds();
-      window.onscroll = () => {
-        const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-        removeBDAds(); topScroll = scrolls;
-      };
-    }
     let x = 0; let y = 0;
-    doc.onmousemove = (e) => {
+    window.onpointermove = (e) => {
       if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
         cleanLinks(baiduParams); x = e.clientX; y = e.clientY;
       }
@@ -630,7 +714,7 @@
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ CSDN ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanCSDN() {
-    restoreState(csdnParams); cleanLinks(csdnParams);
+    restoreState(csdnParams); deferredCleanLinks(csdnParams, DELAY_TIME.normal);
     // CSDN.net tracking events
     function blockCSDNEvents() {
       const links = doc.getElementsByTagName('a');
@@ -638,12 +722,12 @@
         if (links[i].hostname) { links[i].addEventListener('click', (e) => { e.stopImmediatePropagation(); }); }
       }
     }
-    doc.onmousemove = (e) => {
+    window.onpointermove = (e) => {
       if (e.clientY < 170 || e.clientY > 450) { cleanLinks(csdnParams); blockCSDNEvents(); }
     };
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-      if (Math.abs(scrolls - topScroll) > 150) { cleanLinks(csdnParams); blockCSDNEvents(); topScroll = scrolls; }
+      if (scrolls - topScroll > 120) { cleanLinks(csdnParams); blockCSDNEvents(); topScroll = scrolls; }
     };
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Ali Sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
@@ -654,51 +738,58 @@
       const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
       if (scrolls - topScroll > 120) { cleanLinks(aliParams); blockClickEvents(aliParams, 0); topScroll = scrolls; }
     };
-    doc.addEventListener('mousemove', (e) => {
+    doc.addEventListener('pointermove', (e) => {
       if (e.clientY < 120) { cleanLinks(aliParams); blockClickEvents(aliParams, 0); }
     });
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Youtube ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanYoutube() {
+    restoreState(ytParams); cleanLinks(ytParams);
     doc.addEventListener('DOMContentLoaded', () => {
-      deferredCleanLinks(commonParams, DELAY_TIME.normal); blockClickEvents(commonParams, 0);
+      deferredCleanLinks(ytParams, DELAY_TIME.slow); blockClickEvents(ytParams, 0);
     });
     doc.addEventListener('contextmenu', () => {
-      cleanLinks(commonParams);
-      if (/(^\/watch$|^\/embed)/.test(pagePath)) { // Copy clean video urls after right-click at the video player zone on `youtube.com`
+      cleanLinks(ytParams);
+      if (pagePath === '/results') {
+        doc.addEventListener('pointerenter', (e) => { e.stopPropagation(); cleanLinks(ytParams); }, true);
+      }
+      window.onscroll = () => {
+        const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
+        if (scrolls - topScroll > 120) { cleanLinks(ytParams); topScroll = scrolls; }
+      };
+      // Copy cleaning video urls after right-click at the video player zone on `youtube.com`
+      const shareURL = new URL('https://youtube.com/watch');
+      if (pagePath.startsWith('/watch')) {
+        shareURL.searchParams.set('v', new URL(pageURL).searchParams.get('v'));
         const videoCM = doc.getElementsByClassName('ytp-contextmenu')[0].getElementsByClassName('ytp-menuitem');
-        videoCM[1].addEventListener('click', () => { navigator.clipboard.writeText(pageURL); });
-        const vid = doc.getElementsByTagName('video')[0];
-        const url = new URL(pageURL); url.searchParams.set('t', vid.currentTime.toFixed(0));
-        videoCM[2].addEventListener('click', () => { navigator.clipboard.writeText(url.toString()); });
+        videoCM[1].addEventListener('click', () => { navigator.clipboard.writeText(shareURL.href); });
+        videoCM[2].addEventListener('click', () => {
+          shareURL.searchParams.set('t', doc.getElementsByTagName('video')[0].currentTime.toFixed(0));
+          navigator.clipboard.writeText(shareURL.href);
+        });
       }
       if (pagePath.startsWith('/embed')) { // Embedded youtube videos
+        shareURL.searchParams.set('v', pagePath.replace('/embed/', ''));
         const videoCM = doc.getElementsByClassName('ytp-contextmenu')[0].getElementsByClassName('ytp-menuitem');
-        videoCM[2].addEventListener('click', () => { navigator.clipboard.writeText(pageURL); });
-        const vid = doc.getElementsByTagName('video')[0];
-        const url = new URL(pageURL); url.searchParams.set('t', vid.currentTime.toFixed(0));
-        videoCM[3].addEventListener('click', () => { navigator.clipboard.writeText(url.toString()); });
+        videoCM[2].addEventListener('click', () => { navigator.clipboard.writeText(shareURL.href); });
+        videoCM[3].addEventListener('click', () => {
+          shareURL.searchParams.set('t', doc.getElementsByTagName('video')[0].currentTime.toFixed(0));
+          navigator.clipboard.writeText(shareURL.href);
+        });
       }
     });
-    if (pagePath === '/results') {
-      doc.addEventListener('pointerenter', (e) => { e.stopPropagation(); cleanLinks(commonParams); }, true);
-    }
-    window.onscroll = () => {
-      const scrolls = doc.documentElement.scrollTop || doc.body.scrollTop;
-      if (scrolls - topScroll > 120) { cleanLinks(commonParams); topScroll = scrolls; }
-    };
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Custom clean ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   // Youku, Douyin, Amazon
   function customClean(siteParams) {
     restoreState(siteParams); cleanLinks(siteParams);
     let x = 0; let y = 0;
-    doc.addEventListener('mousemove', (e) => {
+    doc.addEventListener('pointermove', (e) => {
       if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
         cleanLinks(siteParams); x = e.clientX; y = e.clientY;
       }
     });
-    doc.addEventListener('mousedown', (e) => { e.stopImmediatePropagation(); });
+    doc.addEventListener('DOMContentLoaded', () => { blockClickEvents(siteParams, 0); });
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Main Funtion ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   (() => {
@@ -706,29 +797,32 @@
     let MenuClean; let MenuAddParams; let InputTitle; let invalidFormat; let MenuRemoveParam; let noParam;
     switch (navigator.language) {
       case 'zh-CN' || 'zh-SG':
-        MenuClean = '手动清理链接'; MenuAddParams = '添加自定义参数'; InputTitle = '请输入单个指定的参数（仅支持字母，数字，下划线与任意类型的括号）';
+        MenuClean = '手动清理链接'; MenuAddParams = '添加自定义参数';
+        InputTitle = '请输入单个指定的参数（仅支持字母，数字，下划线与任意类型的括号）';
         invalidFormat = '无效的参数格式 '; MenuRemoveParam = '移除一个手动添加的参数（页面刷新后生效）'; noParam = '无此参数';
         break;
       case 'zh-TW' || 'zh-HK':
-        MenuClean = '手動清理鏈接'; MenuAddParams = '添加自定義参数'; InputTitle = '請輸入單個指定的參數（僅支持字母，數字，下劃線與任意類型的括號）';
+        MenuClean = '手動清理鏈接'; MenuAddParams = '添加自定義参数';
+        InputTitle = '請輸入單個指定的參數（僅支持字母，數字，下劃線與任意類型的括號）';
         invalidFormat = '無效的參數格式 '; MenuRemoveParam = '移除一個手動添加的參數（頁面刷新後生效）'; noParam = '無此參數';
         break;
       default: // English and others
-        MenuClean = 'Manually retry links cleaning'; MenuAddParams = 'Add a custom parameter'; // eslint-disable-next-line max-len
-        InputTitle = 'Please enter a single parameter below \n(only support letters, numbers, underscore and all types of brackets):';
+        MenuClean = 'Manually retry links cleaning'; MenuAddParams = 'Add a custom parameter';
+        InputTitle = 'Please enter a single parameter below \n(only support letters, '
+        + 'numbers, underscore and all types of brackets):';
         invalidFormat = 'Not a valid parameter format ';
-        MenuRemoveParam = 'Remove a custom added parameter (Effect after refresh)'; noParam = 'No such parameter.';
+        MenuRemoveParam = 'Remove a custom parameter (Effect after refresh)'; noParam = 'No such parameter.';
         break;
     }
     // Add custom params from the Script menu (Submenu of addons)
-    function addCustomParam(inputParam) {
+    function addCustomParam(inputParam, storedArray) {
       if (/^[a-zA-Z0-9()[\]{}<>_]*$/.test(inputParam)) {
         let list;
         // eslint-disable-next-line no-undef
         if (GM_getValue(pageHost)) { list = GM_getValue(pageHost); } else { list = []; }
         // eslint-disable-next-line no-undef
         if (inputParam) { list.push(inputParam); GM_setValue(pageHost, list); }
-        list.forEach((v) => { if (!commonParams.includes(v)) { commonParams.push(v); } });
+        list.forEach((v) => { if (!storedArray.includes(v)) { storedArray.push(v); } });
       } else { alert(invalidFormat); }
     }
     function removeCustomAddedParam(inputParam) { // Remove a parameter that has been added from the script menu
@@ -741,49 +835,56 @@
         } else { alert(noParam); }
       }
     }
-    let siteParams; // For script menu
-    switch (true) {
-      case /(bilibili|biligame).com$/.test(pageHost): //  space passport account message member t app manga show link biligame mall
-        siteParams = bilibiliParams; restoreState(bilibiliParams); cleanLinks(bilibiliParams);
+    let siteParams;// For script menu
+    switch (true) { // REST:  space passport account message member t app manga show link biligame mall pay 
+      case /(bilibili|biligame).com$/.test(pageHost):
+        siteParams = bilibiliParams;
+        restoreState(bilibiliParams); cleanLinks(bilibiliParams);
         removeBiliAnnoyances(0); blockBClickEvents(); biliListenScrolling(); bilibiliListenMoving();
         if (pageHost.endsWith('www.bilibili.com')) cleanBVideoURL();
         if (pageHost.endsWith('search.bilibili.com')) cleanBSearch();
         if (pageHost.endsWith('live.bilibili.com')) cleanBLive(DELAY_TIME.normal);
-        doc.addEventListener('DOMContentLoaded', () => { removeBiliMetadData(); removeBiliAnnoyances(1000); });
+        doc.addEventListener('DOMContentLoaded', () => {
+          removeBiliMetadData(); removeBiliAnnoyances(1000); blockBClickEvents();
+        });
         break;
-      case pageHost.endsWith('youtube.com'): // eslint-disable-next-line max-len
-        commonParams.push('embeds_referring_euri', 'embeds_euri', 'source_ve_path', 'feature', 'embeds_referring_origin', 'redir_token', 'pp');
-        siteParams = commonParams; cleanYoutube(commonParams);
+      case pageHost.endsWith('youtube.com'):
+        siteParams = ytParams; cleanYoutube(siteParams);
         break;
       case pageHost.endsWith('baidu.com'):
         siteParams = baiduParams; cleanBaidu();
         break; // eslint-disable-next-line max-len
       case /(alibaba|alibabagroup|aliyun|alimama|aliexpress|taobao|tmall|1688)\.(com|hk|cn)$|(lazada|trendyol).[a-z.]{2,6}$/.test(pageHost):
-        siteParams = aliParams; cleanAliSites();
+        siteParams = aliParams; paramsReg = aliParamsReg; cleanAliSites();
         break;
       case /amazon.[a-z.]{2,6}$/.test(pageHost):
-        siteParams = amazonParams; customClean(amazonParams);
+        siteParams = amaznParams; paramsReg = amznParamsReg; customClean(siteParams, amznParamsReg);
         break;
       case pageHost.endsWith('csdn.net'):
         siteParams = csdnParams; cleanCSDN();
         break;
       case pageHost.endsWith('youku.com'):
-        siteParams = youkuParams; customClean(youkuParams);
+        siteParams = youkuParams; paramsReg = aliParamsReg; customClean(siteParams, aliParamsReg);
         break;
       case /(tiktok|douyin).com$/.test(pageHost):
-        siteParams = douyinParams; customClean(douyinParams);
+        siteParams = douyinParams; customClean(siteParams);
         break;
       default:
-        siteParams = commonClean(); addCustomParam('');
-        // eslint-disable-next-line no-undef
-        GM_registerMenuCommand(MenuAddParams, () => { addCustomParam(prompt(InputTitle, '')); }); // Menu: Add a custom param
-        // eslint-disable-next-line no-undef
-        GM_registerMenuCommand(MenuRemoveParam, () => { removeCustomAddedParam(prompt(MenuRemoveParam, '')); }); // Menu: Remove custom added param
+        siteParams = commonClean();
         break;
-    } // eslint-disable-next-line no-undef
+    }
+    addCustomParam('', siteParams); // eslint-disable-next-line no-undef
     GM_registerMenuCommand(MenuClean, () => { // Menu: Retry clean all links
       restoreState(siteParams); cleanLinks(siteParams); console.log(siteParams);
     }, 'C');
+    // eslint-disable-next-line no-undef
+    GM_registerMenuCommand(MenuAddParams, () => { // Menu: Add a custom param
+      addCustomParam(prompt(InputTitle, ''), siteParams);
+    });
+    // eslint-disable-next-line no-undef
+    GM_registerMenuCommand(MenuRemoveParam, () => { // Menu: Remove custom added param
+      removeCustomAddedParam(prompt(MenuRemoveParam, ''));
+    });
     window.addEventListener('urlchange', () => { restoreState(siteParams); cleanLinks(siteParams); });
     window.addEventListener('keydown', (e) => { // [Alt + Shift + X]
       if (e.key === 'X' && e.altKey && e.shiftKey) { restoreState(siteParams); cleanLinks(siteParams); }
@@ -793,16 +894,22 @@
 
 /*
 # Changelog
+v0.6.6 2023.06.15
+- Remove more tracking parameters on `Amazon|LinkedIn.com|ebay|Youtube.com|Imdb|Bilibili|Apple.com` and common parameters.
+- Allow adding custom parameters to the websites that in additional cleaning.
+- Block more tracking events within its iframe, remove ad-links`(right-bottom-banner|bannerAd)`  on bilibili.com.
+- Performance improvements and issue fixes.
+
 v0.6.5 2023.06.07  
 - Clean more tracking params on `Google|Bilibili|Youtube|Stackoverflow|Bing.com|Xbox.com|Facebook|Amazon`, block more tracking events.
 - Clean tracking params at the hash of URLs on `Google`.
 - Allow using numbers and other types of brackets on the function of add custom parameters.
-- More precise domain name matching. (function includes() >> startsWith/endsWith/Regular Expression)
+- More precise domain name matching. (function includes() >> startsWith/endsWith/Regular Expression)   
 - Fix most timeout issues, and other issue fixes and performance improvements (events listening optimisations).
 - Additional feature: hide login popups for `zhihu.com|hoyolab.com`.
 
 v0.6.4 2023.06.02  
-- Reduce event blocking scope that binds to elements `<a>` (capturing >> bubbling).
+- Reduce event blocking scope that binds to the elements `<a>` (capturing >> bubbling).
 - Clean more tracking params on `linkedin|tmall|facebook|google|ebay.com`, block tracking events on `linkedin.com`.
 - Clean copying of video urls after right-click at the main video on `youtube.com` (unshorten without tracking params).
 - Other improvements.
