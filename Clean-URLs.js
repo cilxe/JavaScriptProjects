@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.6.6
+// @version            0.6.6.1
 // @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -468,11 +468,10 @@
         }
         index += 1;
       } while (index < 2); // bilibili login tips
-      if (doc.getElementsByClassName('right-entry-item')[0]
-      && doc.getElementsByClassName('right-entry-item')[0].innerText.includes('登录')) {
+      const rightEntyItems = doc.getElementsByClassName('right-entry-item');
+      if (rightEntyItems[0] && rightEntyItems[0].innerText.includes('登录')) {
         hideElement(['.lt-row', '.bili-login-card', '.bili-mini-mask', '.is-bottom'], 30, 6200, false);
-        const rightEntyItems = doc.getElementsByClassName('right-entry-item');
-        if (/登录/.test(rightEntyItems[0].innerText)) {
+        if (/登录/.test(rightEntyItems[0].innerText) && rightEntyItems[0].getElementsByTagName('span')[0]) {
           rightEntyItems[0].getElementsByTagName('span')[0] // eslint-disable-next-line max-len
             .outerHTML = '<a href="https://passport.bilibili.com/login" target="_blank" onmouseup="cleanLinks(bilibiliParams)">登录</a>';
         }
@@ -558,18 +557,24 @@
       // input suggested items
       const suggestItems = doc.getElementsByClassName('suggest-item');
       const handleBSearchClick = () => { deferredBlockBClickEvents(DELAY_TIME.fast); };
-      for (let i = 0; i < suggestItems.length; i += 1) {
-        suggestItems[i].addEventListener('click', handleBSearchClick, true);
+      if (suggestItems) {
+        for (let i = 0; i < suggestItems.length; i += 1) {
+          suggestItems[i].addEventListener('click', handleBSearchClick, true);
+        }
       }
       // search trending items
       const topSearchs = doc.getElementsByClassName('trending-item');
-      for (let i = 0; i < topSearchs.length; i += 1) {
-        topSearchs[i].addEventListener('click', handleBSearchClick, true);
+      if (topSearchs) {
+        for (let i = 0; i < topSearchs.length; i += 1) {
+          topSearchs[i].addEventListener('click', handleBSearchClick, true);
+        }
       }
       // search history items
       const historyItems = doc.getElementsByClassName('history-item');
-      for (let i = 0; i < historyItems.length; i += 1) {
-        historyItems[i].addEventListener('click', handleBSearchClick, true);
+      if (historyItems) {
+        for (let i = 0; i < historyItems.length; i += 1) {
+          historyItems[i].addEventListener('click', handleBSearchClick, true);
+        }
       }
     }
     const handleBSearchClickB = () => {
@@ -589,8 +594,10 @@
     blockBSearchItemEvents();
     // paging button clicking event
     const pageButtons = doc.getElementsByClassName('vui_pagenation--btn'); // div
-    for (let i = 0; i < pageButtons.length; i += 1) {
-      pageButtons[i].addEventListener('click', () => { deferredBlockBClickEvents(DELAY_TIME.fast); }, true);
+    if (pageButtons) {
+      for (let i = 0; i < pageButtons.length; i += 1) {
+        pageButtons[i].addEventListener('click', () => { deferredBlockBClickEvents(DELAY_TIME.fast); }, true);
+      }
     }
     deferredBlockBClickEvents(DELAY_TIME.normal); deferredCleanLinks(bilibiliParams, DELAY_TIME.slow - 600);
   }
@@ -615,20 +622,22 @@
       const handleWriteText = () => { navigator.clipboard.writeText(pageURL); };
       if (doc.querySelector(toolBar)) {
         doc.querySelector(toolBar).addEventListener('pointermove', () => {
-          doc.getElementById(sharOuter).removeEventListener('click', handleWriteText);
-          doc.getElementById(sharOuter).addEventListener('click', handleWriteText);
-          doc.getElementById(sharInner).addEventListener('click', (event) => {
-            event.stopImmediatePropagation();
-            if (doc.getElementById(sharInner).innerText.includes('精准')) {
-              if (pagePath.indexOf('/video/') === 0) {
-                vid = doc.querySelector('video') || doc.querySelector('bwp-video'); // Chrome Firefox Edge ..
-              } else if (pagePath.indexOf('/bangumi/') === 0) {
-                vid = doc.getElementsByTagName('video')[1] || doc.querySelector('bwp-video');
-              }
-              url.searchParams.set('t', vid.currentTime.toFixed(2));
-              navigator.clipboard.writeText(url.toString());
-            } else { navigator.clipboard.writeText(pageURL); }
-          });
+          if (sharOuter) {
+            doc.getElementById(sharOuter).removeEventListener('click', handleWriteText);
+            doc.getElementById(sharOuter).addEventListener('click', handleWriteText);
+            doc.getElementById(sharInner).addEventListener('click', (event) => {
+              event.stopImmediatePropagation();
+              if (doc.getElementById(sharInner).innerText.includes('精准')) {
+                if (pagePath.indexOf('/video/') === 0) {
+                  vid = doc.querySelector('video') || doc.querySelector('bwp-video'); // Chrome Firefox Edge ..
+                } else if (pagePath.indexOf('/bangumi/') === 0) {
+                  vid = doc.getElementsByTagName('video')[1] || doc.querySelector('bwp-video');
+                }
+                url.searchParams.set('t', vid.currentTime.toFixed(2));
+                navigator.clipboard.writeText(url.toString());
+              } else { navigator.clipboard.writeText(pageURL); }
+            });
+          }
         });
       }
     });
@@ -639,24 +648,34 @@
     const livePopupBlock = (selection) => {
       if (selection && doc.getElementById('anchor-guest-box-id')) {
         doc.getElementById('anchor-guest-box-id').style.display = 'none';
-      } else if (!selection) { doc.getElementById('anchor-guest-box-id').style.display = ''; }
+      } else if (!selection) {
+        doc.getElementById('anchor-guest-box-id').style.display = '';
+      }
       const iframes = doc.getElementsByTagName('iframe');
       for (let i = 0; i < iframes.length; i += 1) {
         if (iframes[i].src.includes('live-lottery')) {
-          if (selection) { iframes[i].style.visibility = 'hidden'; } else { iframes[i].style.visibility = ''; }
+          if (selection) {
+            iframes[i].style.visibility = 'hidden';
+          } else {
+            iframes[i].style.visibility = '';
+          }
         }
       }
     };
     const tid1 = setTimeout(() => {
       const navis = doc.getElementsByClassName('tabs__tag-item'); // cat
-      for (let i = 0; i < navis.length; i += 1) {
-        navis[i].addEventListener('click', () => { deferredCleanLinks(bilibiliParams, DELAY_TIME.fast); }, true);
+      if (navis) {
+        for (let i = 0; i < navis.length; i += 1) {
+          navis[i].addEventListener('click', () => { deferredCleanLinks(bilibiliParams, DELAY_TIME.fast); }, true);
+        }
       }
       const tabItems = doc.getElementsByClassName('tab-item'); // sort
-      for (let i = 0; i < tabItems.length; i += 1) {
-        tabItems[i].addEventListener('click', () => {
-          blockBClickEvents(); deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
-        }, true);
+      if (tabItems) {
+        for (let i = 0; i < tabItems.length; i += 1) {
+          tabItems[i].addEventListener('click', () => {
+            blockBClickEvents(); deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
+          }, true);
+        }
       } clearTimeout(tid1);
     }, delayTime);
     const intervalID = setInterval(livePopupBlock(BlockLivePopups), DELAY_TIME.normal * 2);
@@ -669,7 +688,7 @@
     restoreState(baiduParams);
     function removeBDAds() {
       const searchAds = document.getElementsByClassName('EC_result');
-      for (let i = 0; i < searchAds.length; i += 1) { searchAds[i].remove(); }
+      if (searchAds) { for (let i = 0; i < searchAds.length; i += 1) { searchAds[i].remove(); } }
     }
     function cleanBDLinks(siteParams) {
       cleanLinks(baiduParams);
@@ -894,7 +913,13 @@
 
 /*
 # Changelog
-v0.6.6 2023.06.15
+v0.6.7 2023
+- Performance improvements.
+
+v0.6.6.1 2023.06.15  
+- Fixed an issue where the missing existence detection for bilibili may cause numerous error messages (Check before use).
+
+v0.6.6 2023.06.15  
 - Remove more tracking parameters on `Amazon|LinkedIn.com|ebay|Youtube.com|Imdb|Bilibili|Apple.com` and common parameters.
 - Allow adding custom parameters to the websites that in additional cleaning.
 - Block more tracking events within its iframe, remove ad-links`(right-bottom-banner|bannerAd)`  on bilibili.com.
