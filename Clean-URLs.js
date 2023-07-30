@@ -68,10 +68,10 @@
   let paramsReg = /^(spm|from_|ref_|track|trk|share_)|_from$|scm/;
 
   const commonParams = ['spm', 'mkt', 'src', 'from', 'response_type',
-    'redirect_uri', 'source', 'vd_source', 'alias',
+    'redirect_uri', 'source', 'vd_source', 'alias', 'brand',
     'curator_clanid', 'snr', 'redir', 'sprefix',
     'utm_id', 'utm_content', 'utm_source', 'utm_medium', 'utm_sources',
-    'utm_term', 'utm_campaign', 'utm_referrer', 'ref'];
+    'utm_term', 'utm_campaign', 'utm_referrer', 'utm_keyword', 'ref'];
 
   // Tracking or other params for certain sites
   const bilibiliParams = ['vd_source', 'hotRank', 'launch_id', 'popular_rank',
@@ -79,7 +79,7 @@
     'is_live_full_webview', 'is_live_webview', 'vt', 'theme', 'noReffer',
     'timestamp', 'unique_k', 'hasBack', 'noTitleBar', 'plat_id', 'is_preview',
     'buvid', 'up_id', 'is_story_h5', 'hybrid_set_header', 'lottery_id',
-    'jumpLinkType', '-Abrowser', 'from'];
+    'jumpLinkType', '-Abrowser', 'from', 'pagefrom', 'seid'];
     // 'event_source_type', 'bsource', 'search_source', 'share_plat', 'goFrom',
     // 'sourceFrom', 'share_source', 'from_source', 'share_tag'
     // , 'refer_from', 'broadcast_type', 'dynamicspm_id_from', 'msource', 
@@ -117,10 +117,8 @@
     'pvid', 'iconType', 'traceId', 'relationId', 'union_lens', 'ref',
     'ali_trackid', 'ak', 'detailSharePosition', 'topOfferIds', 'sp_abtk',
     'search_condition', 'industryCatId', 'tbSocialPopKey', 'bxsign',
-    'utparam', 'spm',
-    'ad_id', 'am_id', 'cm_id', 'pm_id', '_k', // fliggy.com
-    'shareUniqueId', 'clickTrackInfo', 'data_prefetch', 'at_iframe', // lazada, trendyol
-    'prefetch_replace', 'wc',
+    'utparam', 'spm', 'eurl', 'itemIds', 'country', 'epid', 'user_number_id',
+    'rand', '_lgt_', 'x5referer',
   ]; // 'wh_pid', 'wh_random_str', 'wx_navbar_transparent', 'wh_weex'
   const aliParamsRegStr = '^(utm_|spm_|from_|ref|track|wh_|wx_)|'
     + '^(spm|acm|scm|scene|from|lwfrom|disableNav|es|rootPageId)$';
@@ -167,7 +165,7 @@
       window.history.replaceState({}, 'Restore', url.href);
     }
   }
-  let cleanLinks; // Clean most <a> links
+  let cleanLinks; // Clean most of <a> links
   switch (true) {
     case aliSitesReg.test(pageHost): // Alibaba sites
       cleanLinks = (siteParams) => {
@@ -243,11 +241,10 @@
               Array.from(dlParams.keys()).forEach((k) => { if (dlParamsReg.test(k)) { dlParams.delete(k); } });
               commonParams.forEach((k) => { if (dlParams.has(k)) { dlParams.delete(k); } });
             }
-
             links[i].href = dlURL.href;
             links[i].classList.remove('jump-link');
             links[i].target = '_blank';
-            if (links[i].innerText === dataLink) {
+            if (links[i].innerText.startsWith(dlURL.href)) {
               links[i].innerText = dlURL.href;
             }
           }
@@ -705,8 +702,8 @@
   }
   // www.bilibili.com/video/*
   function cleanBVideoURL() {
-    cleanLinks(bilibiliParams);
     doc.addEventListener('DOMContentLoaded', () => {
+      cleanLinks(bilibiliParams);
       if (doc.querySelector('.rec-footer')) {
         doc.querySelector('.rec-footer').addEventListener('click', () => {
           deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
@@ -887,6 +884,39 @@
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Ali Sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanAliSites() {
+    if (pageHost.endsWith('taobao.com')) { // fliggy.com
+      aliParams.push('ad_id', 'am_id', 'cm_id', 'pm_id', '_k');
+    }
+    if (pageHost.endsWith('1688.com')) {
+      aliParams.push(
+        '__pageId__',
+        'resourceId',
+        'offerId',
+        'offerIds',
+        'object_id',
+        'udsPoolId',
+        'resultType',
+        'cms_id',
+        'pha_html',
+        '__existtitle__',
+        'object_type',
+        'delivery_pool_id',
+        'delivery_pool_type',
+      );
+    }
+    if (pageHost.endsWith('fliggy.com')) { // fliggy.com
+      aliParams.push('ad_id', 'am_id', 'cm_id', 'pm_id', '_k');
+    }
+    if (/(lazada|trendyol).[a-z.]{2-10}/.test(pageHost)) { // lazada, trendyol
+      aliParams.push(
+        'shareUniqueId',
+        'clickTrackInfo',
+        'data_prefetch',
+        'at_iframe',
+        'prefetch_replace',
+        'wc',
+      );
+    }
     restoreState(aliParams); cleanLinks(aliParams);
     deferredCleanLinks(aliParams, DELAY_TIME.slow);
     doc.addEventListener('DOMContentLoaded', () => {
@@ -996,7 +1026,7 @@
         noSuchParam = '無此參數';
         break;
       default: // English and others
-        MenuClean = 'Manually retry links cleaning';
+        MenuClean = 'Retry link cleanup.';
         MenuAddParams = 'Add a custom parameter (English Mode)';
         InputTitle = 'Please enter a single parameter below \n(only support '
           + 'letters, numbers, underscore, en-dash and all types of brackets):';
@@ -1073,7 +1103,7 @@
         break;
       case /(youku|tudou)\.com$/.test(pageHost):
         siteParams = youkuTudouParams; paramsReg = aliParamsReg;
-        customClean(siteParams, aliParamsReg);
+        customClean(siteParams);
         break;
       case /(tiktok|douyin)\.com$/.test(pageHost):
         siteParams = douyinParams; customClean(siteParams);
@@ -1108,6 +1138,10 @@
 
 /*
 # Changelog
+v0.6.9 2023
+- Clean more parameters (bilibili|1688|taobao).
+- Minor issues fixes and performance improvments.
+
 v0.6.8 2023.07.02  
 - Temporarily hide annoying content on `gitee.com`.
 - Clean more parameters for ali sties includes `jiyoujia|fliggy.com`.
