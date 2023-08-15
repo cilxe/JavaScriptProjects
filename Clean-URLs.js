@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.6.8
+// @version            0.6.9
 // @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -65,7 +65,9 @@
   let topScroll = 0;
   const hostRegex = /[a-z0-9-]{1,128}\.[a-z]{2,15}$/;
   // Matches all tracking parameters *contains/starts/ends* with the name
-  let paramsReg = /^(spm|from_|ref_|track|trk|share_)|_from$|scm/;
+  const paramsRegStr = '^(spm|from_|ref_|track|trk|share_)|'
+  + '(_from)$|scm|referrer';
+  let paramsReg = new RegExp(paramsRegStr);
 
   const commonParams = ['spm', 'mkt', 'src', 'from', 'response_type',
     'redirect_uri', 'source', 'vd_source', 'alias', 'brand',
@@ -86,16 +88,19 @@
     // 'csource', 'from_spmid', 'spm_id_from', 'spm_id', 'share_session_id', 
   const biliParamsReg = /^(utm_|share_|spm|from_)|(From|_from|source|_type|Type)$/;
 
-  const baiduParams = ['rsv_idx', 'hisfilter', 'rsf', 'rsv_pq', 'rsv_t', 'qid', 'rsv_dl', // baidu
-    'oq', 'gpc', 'usm', 'tfflag', 'ie', 'bs', 'rqlang', 'tn', 'sc_us', 'wfr', 'fenlei', 'platform', 'rqid',
-    'base_query', 'entry', 'qbl', 'for', 'from', 'topic_pn', 'rsp', 'rs_src', 'f', 'rsv_page', 'dyTabStr',
-    'ct', 'lm', 'site', 'sites', 'fr', 'cl', 'bsst', 'lid', 'rsv_spt', 'rsv_bp', 'src', 'sfrom', 'refer',
-    'zp_fr', 'channel', 'p_from', 'n_type', 'eqid', '_at_', 'sa', 'pd', 'source', 'tag_key',
-    'uname', 'uid', 'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', 'frwh', 'obj_id', 'fid', // tieba
-    'fname', '_t', 'topic_name', 'frs', 'share_from', 'idfrom', 'tpl', 'u', 'tb_mod', 'tb_fr', 'share', 'sfc',
-    'client_version', 'unique', 'is_video', 'st',
-    '_wkts_', 'ai', 'ck', 'shh', // wenku
-    'utm_source', 'utm_medium', 'utm_term', 'utm_campaign', 'utm_content', 'utm_id',
+  const baiduParams = ['rsv_idx', 'hisfilter', 'rsf', 'rsv_pq', 'rsv_t', 'qid', // baidu
+    'rsv_dl', 'oq', 'gpc', 'usm', 'tfflag', 'ie', 'bs', 'rqlang', 'tn',
+    'sc_us', 'wfr', 'fenlei', 'platform', 'rqid', 'base_query', 'entry', 'qbl',
+    'for', 'from', 'topic_pn', 'rsp', 'rs_src', 'f', 'rsv_page', 'dyTabStr',
+    'ct', 'lm', 'site', 'sites', 'fr', 'cl', 'bsst', 'lid', 'rsv_spt',
+    'rsv_bp', 'src', 'sfrom', 'refer', 'zp_fr', 'channel', 'p_from', 'n_type',
+    'eqid', '_at_', 'sa', 'pd', 'source', 'tag_key', 'uname', 'uid',
+    'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', 'frwh', // tieba
+    'obj_id', 'fid', 'fname', '_t', 'topic_name', 'frs', 'share_from', 'tpl',
+    'u', 'tb_mod', 'tb_fr', 'share', 'sfc', 'idfrom', 'client_version', 'st',
+    'unique', 'is_video', '_wkts_', 'ai', 'ck', 'shh', // wenku
+    'utm_source', 'utm_medium', 'utm_term', 'utm_campaign', 'utm_content',
+    'utm_id',
   ];
 
   const douyinParams = ['rsv_idx', 'hisfilter', 'source', 'aid', 'enter_from',
@@ -103,7 +108,8 @@
     'is_from_webapp', 'sender_device', 'web_id']; // tiktok
 
   // 'from_wecom', 'source', 
-  const csdnParams = commonParams.concat(['ops_request_misc', 'request_id', 'biz_id', 'ydreferer', 'usp']);
+  const csdnParams = commonParams.concat(['ops_request_misc', 'request_id',
+    'biz_id', 'ydreferer', 'usp']);
 
   const youkuTudouParams = ['spm', 'scm', 'from', 's', 'playMode', 'client_id'];
 
@@ -112,16 +118,11 @@
   + '.(com|hk|cn)$|(lazada|trendyol).[a-z.]{2,15}$';
   const aliSitesReg = new RegExp(aliSitesStr);
 
-  const aliParams = [ // taobao.com/tmall.com/1688.com/tmall.hk
-    'stats_click', 'initiative_id', 'source', 'suggest', 'suggest_query',
-    'pvid', 'iconType', 'traceId', 'relationId', 'union_lens', 'ref',
-    'ali_trackid', 'ak', 'detailSharePosition', 'topOfferIds', 'sp_abtk',
-    'search_condition', 'industryCatId', 'tbSocialPopKey', 'bxsign',
-    'utparam', 'spm', 'eurl', 'itemIds', 'country', 'epid', 'user_number_id',
-    'rand', '_lgt_', 'x5referer',
+  const aliParams = [
+    'spm', 'acm', 'scm', 'scene', 'from',
   ]; // 'wh_pid', 'wh_random_str', 'wx_navbar_transparent', 'wh_weex'
   const aliParamsRegStr = '^(utm_|spm_|from_|ref|track|wh_|wx_)|'
-    + '^(spm|acm|scm|scene|from|lwfrom|disableNav|es|rootPageId)$';
+    + '^(lwfrom|disableNav|es|rootPageId)$';
   const aliParamsReg = new RegExp(aliParamsRegStr);
 
   const amaznParams = ['content-id', 'qid', 'crid', 'isAmazonFulfilled'];
@@ -461,6 +462,9 @@
       case pageHost.endsWith('stackoverflow.com'):
         paramsReg = /^(utm_|spm_|from_|ref|track|trk|so_)/;
         break;
+      case pageHost.endsWith('pixiv.net'):
+        commonParams.push('provider');
+        break;
       case pageHost.endsWith('music.apple.com'):
         commonParams.push('at', 'ct', 'itscg', 'itsct');
         break;
@@ -533,6 +537,18 @@
             }, 3000);
           });
         })();
+        break;
+      case pageHost.endsWith('fiverr.com'):
+        commonParams.push(
+          'pckg_id',
+          'funnel',
+          'context_type',
+          'context_alg',
+          'imp_id',
+          'pos',
+          'seller_online',
+          'context',
+        );
         break;
       default: break;
     }
@@ -884,38 +900,73 @@
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Ali Sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanAliSites() {
-    if (pageHost.endsWith('taobao.com')) { // fliggy.com
-      aliParams.push('ad_id', 'am_id', 'cm_id', 'pm_id', '_k');
-    }
-    if (pageHost.endsWith('1688.com')) {
-      aliParams.push(
-        '__pageId__',
-        'resourceId',
-        'offerId',
-        'offerIds',
-        'object_id',
-        'udsPoolId',
-        'resultType',
-        'cms_id',
-        'pha_html',
-        '__existtitle__',
-        'object_type',
-        'delivery_pool_id',
-        'delivery_pool_type',
-      );
-    }
-    if (pageHost.endsWith('fliggy.com')) { // fliggy.com
-      aliParams.push('ad_id', 'am_id', 'cm_id', 'pm_id', '_k');
-    }
-    if (/(lazada|trendyol).[a-z.]{2-10}/.test(pageHost)) { // lazada, trendyol
-      aliParams.push(
-        'shareUniqueId',
-        'clickTrackInfo',
-        'data_prefetch',
-        'at_iframe',
-        'prefetch_replace',
-        'wc',
-      );
+    switch (true) { // taobao.com/tmall.com/tmall.hk
+      case /(taobao|tmall).(com|hk)$/.test(pageHost):
+        aliParams.push(
+          'stats_click',
+          'initiative_id',
+          'source',
+          'suggest',
+          'suggest_query',
+          'pvid',
+          'iconType',
+          'traceId',
+          'relationId',
+          'union_lens',
+          'ref',
+          'ali_trackid',
+          'ak',
+          'detailSharePosition',
+          'topOfferIds',
+          'sp_abtk',
+          'search_condition',
+          'industryCatId',
+          'tbSocialPopKey',
+          'bxsign',
+          'utparam',
+          'spm',
+          'eurl',
+          'itemIds',
+          'country',
+          'epid',
+          'user_number_id',
+          'rand',
+          '_lgt_',
+          'x5referer',
+        );
+        break;
+      case pageHost.endsWith('fliggy.com'):
+        aliParams.push('ad_id', 'am_id', 'cm_id', 'pm_id', '_k');
+        break;
+      case pageHost.endsWith('1688.com'):
+        aliParams.push(
+          '__pageId__',
+          'resourceId',
+          'offerId',
+          'offerIds',
+          'object_id',
+          'udsPoolId',
+          'resultType',
+          'cms_id',
+          'pha_html',
+          '__existtitle__',
+          'object_type',
+          'delivery_pool_id',
+          'delivery_pool_type',
+        );
+        break;
+      case /(lazada|trendyol).[a-z.]{2-10}/.test(pageHost):
+        aliParams.push(
+          'shareUniqueId',
+          'clickTrackInfo',
+          'data_prefetch',
+          'at_iframe',
+          'prefetch_replace',
+          'wc',
+        );
+        break;
+      default:
+        break;
     }
     restoreState(aliParams); cleanLinks(aliParams);
     deferredCleanLinks(aliParams, DELAY_TIME.slow);
@@ -1026,7 +1077,7 @@
         noSuchParam = '無此參數';
         break;
       default: // English and others
-        MenuClean = 'Retry link cleanup.';
+        MenuClean = 'Retry link cleaning';
         MenuAddParams = 'Add a custom parameter (English Mode)';
         InputTitle = 'Please enter a single parameter below \n(only support '
           + 'letters, numbers, underscore, en-dash and all types of brackets):';
@@ -1138,8 +1189,9 @@
 
 /*
 # Changelog
-v0.6.9 2023
-- Clean more parameters (bilibili|1688|taobao).
+v0.6.9 2023.08.15
+- Clean more parameters common, (bilibili|1688|taobao|pixiv|fiverr).
+- Improve performance on ali sites (reduce regex mathcing words).
 - Minor issues fixes and performance improvments.
 
 v0.6.8 2023.07.02  
