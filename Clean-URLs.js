@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.6.9
+// @version            0.6.10
 // @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -350,7 +350,9 @@
           links[i].removeEventListener('auxclick', handleLinkClick);
           links[i].addEventListener('auxclick', handleLinkClick);
           links[i].removeEventListener('contextmenu', handleLinkCM);
-          links[i].addEventListener('contextmenu', handleLinkCM);
+          if (links[i].oncontextmenu !== undefined) {
+            links[i].addEventListener('contextmenu', handleLinkCM);
+          }
         }
       }
       clearTimeout(tid);
@@ -1189,7 +1191,10 @@
 
 /*
 # Changelog
-v0.6.9 2023.08.15
+v0.6.10 2023.08.19  
+- Fix an issue where CM for soem sites may fail to prompt in mobile-view mode.
+
+v0.6.9 2023.08.15  
 - Clean more parameters common, (bilibili|1688|taobao|pixiv|fiverr).
 - Improve performance on ali sites (reduce regex mathcing words).
 - Minor issues fixes and performance improvments.
