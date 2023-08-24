@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.6.10
+// @version            0.6.11
 // @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -213,6 +213,10 @@
         const links = doc.getElementsByTagName('a');
         for (let i = 0; i < links.length; i += 1) {
           if (hostRegex.test(links[i].hostname)) {
+            links[i].removeAttribute('data-mod');
+            links[i].removeAttribute('data-spmid');
+            links[i].removeAttribute('data-idx');
+            links[i].removeAttribute('data-target-url');
             const url = new URL(links[i].href);
             const params = url.searchParams;
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
@@ -605,8 +609,10 @@
           const isLinkJumpVideo = links[i].classList.contains('video-time')
           || links[i].classList.contains('video');
           if (!(isLinkJump && isLinkJumpVideo)) {
-            links[i].removeEventListener('click', handleBClickBub);
-            links[i].addEventListener('click', handleBClickBub);
+            if (pageHost.endsWith('bilibili.com')) {
+              links[i].removeEventListener('click', handleBClickBub);
+              links[i].addEventListener('click', handleBClickBub);
+            }
             links[i].removeEventListener('contextmenu', handleBClickBub);
             links[i].addEventListener('contextmenu', handleBClickBub);
           }
@@ -720,8 +726,8 @@
   }
   // www.bilibili.com/video/*
   function cleanBVideoURL() {
+    cleanLinks(bilibiliParams);
     doc.addEventListener('DOMContentLoaded', () => {
-      cleanLinks(bilibiliParams);
       if (doc.querySelector('.rec-footer')) {
         doc.querySelector('.rec-footer').addEventListener('click', () => {
           deferredCleanLinks(bilibiliParams, DELAY_TIME.fast);
@@ -739,7 +745,7 @@
       const handleWriteText = () => { navigator.clipboard.writeText(pageURL); };
       if (doc.querySelector(toolBar)) {
         doc.querySelector(toolBar).addEventListener('pointermove', () => {
-          if (sharOuter) {
+          if (doc.getElementById(sharOuter)) {
             doc.getElementById(sharOuter).removeEventListener('click', handleWriteText);
             doc.getElementById(sharOuter).addEventListener('click', handleWriteText);
             doc.getElementById(sharInner).addEventListener('click', (event) => {
@@ -1010,11 +1016,17 @@
           cleanLinks(ytParams); topScroll = scrolls;
         }
       };
-      // Copy cleaning video urls after right-click at the video player zone on `youtube.com`
+      // Modifications for CM of youtube player
       const shareURL = new URL('https://youtube.com/watch');
+      if (new URL(pageURL).searchParams.has('list')) {
+        shareURL.searchParams
+          .set('list', new URL(pageURL).searchParams.get('list'));
+      }
       if (pagePath.startsWith('/watch')) {
+        console.log(shareURL.href);
         shareURL.searchParams.set('v', new URL(pageURL).searchParams.get('v'));
-        const videoCM = doc.getElementsByClassName('ytp-contextmenu')[0].getElementsByClassName('ytp-menuitem');
+        const videoCM = doc.getElementsByClassName('ytp-contextmenu')[0]
+          .getElementsByClassName('ytp-menuitem');
         videoCM[1].addEventListener('click', () => {
           navigator.clipboard.writeText(shareURL.href);
         });
@@ -1028,7 +1040,8 @@
       }
       if (pagePath.startsWith('/embed')) { // Embedded youtube videos
         shareURL.searchParams.set('v', pagePath.replace('/embed/', ''));
-        const videoCM = doc.getElementsByClassName('ytp-contextmenu')[0].getElementsByClassName('ytp-menuitem');
+        const videoCM = doc.getElementsByClassName('ytp-contextmenu')[0]
+          .getElementsByClassName('ytp-menuitem');
         videoCM[2].addEventListener('click', () => {
           navigator.clipboard.writeText(shareURL.href);
         });
@@ -1191,8 +1204,13 @@
 
 /*
 # Changelog
+v0.6.11 2023.08.24
+- Fixed an issue when preventing certain events may cause parts of the page malfunctional.
+- Fixed an issue that some contents on the video page of bilibili failed to load. 
+- Minor issues fixes.
+
 v0.6.10 2023.08.19  
-- Fix an issue where CM for soem sites may fail to prompt in mobile-view mode.
+- Fix an issue where the CM for soem sites may fail to prompt in mobile-view mode.
 
 v0.6.9 2023.08.15  
 - Clean more parameters common, (bilibili|1688|taobao|pixiv|fiverr).
