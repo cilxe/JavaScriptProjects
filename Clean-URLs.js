@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.6.11
+// @version            0.6.12
 // @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -402,7 +402,7 @@
           '__tn__',
         );
         break;
-      case pageHost.endsWith('twitter.com'):
+      case /(twitter|x)\.com$/.test(pageHost):
         commonParams.push('screen_name');
         break;
       case pageHost.endsWith('reddit.com'):
@@ -428,7 +428,8 @@
           'pt',
         );
         document.addEventListener('DOMContentLoaded', () => {
-          blockClickEvents(commonParams, 8500); deferredCleanLinks(commonParams, DELAY_TIME.normal * 2);
+          blockClickEvents(commonParams, 8500);
+          deferredCleanLinks(commonParams, DELAY_TIME.normal * 2);
         });
         break;
       case pageHost.endsWith('dzen.ru'):
@@ -476,7 +477,17 @@
         break;
       case pageHost.endsWith('zhihu.com'):
         commonParams.push('search_source', 'hybrid_search_source', 'hybrid_search_extra');
-        hideElement(['.Modal-wrapper'], 50, 3000, false);
+        (() => {
+          const intervalID = setInterval(() => {
+            const closeBtn = document.querySelector('.Modal-closeButton');
+            closeBtn.click();
+          }, 50);
+          document.addEventListener('DOMContentLoaded', () => {
+            const timeoutId = setTimeout(() => {
+              clearInterval(intervalID); clearTimeout(timeoutId);
+            }, 3000);
+          });
+        })();
         break;
       case /(163|126|yeah)\.(com|net)$/.test(pageHost):
         commonParams.push('scene', 'session_id', 'fromDlpro', 'dltype');
@@ -573,7 +584,9 @@
   // Remove Bilibili metadata
   function removeBiliMetadData() {
     const metas = doc.getElementsByTagName('meta');
-    for (let i = 0; i < metas.length; i += 1) { if (metas[i].name === 'spm_prefix') { metas[i].remove(); } }
+    for (let i = 0; i < metas.length; i += 1) {
+      if (metas[i].name === 'spm_prefix') { metas[i].remove(); }
+    }
   }
   // Remove Bilibili Annoyances [Login popups, Ads]
   function removeBiliAnnoyances(delayTime) {
@@ -586,10 +599,11 @@
         }
         index += 1;
       } while (index < 2); // bilibili login tips
-      const rightEntyItems = doc.getElementsByClassName('right-entry-item') || doc.getElementsByClassName('item');
+      const rightEntyItems = doc.getElementsByClassName('right-entry-item')
+       || doc.getElementsByClassName('item');
       if (rightEntyItems[0] && rightEntyItems[0].innerText.includes('登录')) {
-        hideElement(['.lt-row', '.bili-login-card',
-          '.bili-mini-mask', '.is-bottom', '.v-popover-content', '.unlogin-popover'], 30, 6000, false);
+        hideElement(['.lt-row', '.bili-login-card', '.bili-mini-mask',
+          '.is-bottom', '.v-popover-content', '.unlogin-popover'], 30, 6000, false);
         const loginTab = rightEntyItems[0].getElementsByTagName('span')[0];
         if (/登录/.test(rightEntyItems[0].innerText) && loginTab) {
           loginTab.outerHTML = '<a href="https://passport.bilibili.com/login"'
@@ -654,8 +668,11 @@
   // Loop execution when the mouse moves
   function bilibiliListenMoving() {
     let x = 0; let y = 0;
-    if (/live.bilibili.com$/.test(pageHost) || /^https?:\/\/(www|m).bilibili\.com\/(video|bangumi)/.test(pageURL)) {
-      window.onpointermove = (e) => { if (e.clientY < 200) { cleanLinks(bilibiliParams); blockBClickEvents(); } };
+    if (/live.bilibili.com$/.test(pageHost)
+    || /^https?:\/\/(www|m).bilibili\.com\/(video|bangumi)/.test(pageURL)) {
+      window.onpointermove = (e) => {
+        if (e.clientY < 200) { cleanLinks(bilibiliParams); blockBClickEvents(); }
+      };
     } else {
       window.onpointermove = (e) => {
         if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
@@ -1204,9 +1221,12 @@
 
 /*
 # Changelog
-v0.6.11 2023.08.24
+v0.6.12 2023.08.28
+- Minor optimisations to be compatible with page adjustments of zhihu.com.
+
+v0.6.11 2023.08.24  
 - Fixed an issue when preventing certain events may cause parts of the page malfunctional.
-- Fixed an issue that some contents on the video page of bilibili failed to load. 
+- Fixed an issue that some contents on the video page of bilibili failed to load.
 - Minor issues fixes.
 
 v0.6.10 2023.08.19  
