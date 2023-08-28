@@ -480,7 +480,7 @@
         (() => {
           const intervalID = setInterval(() => {
             const closeBtn = document.querySelector('.Modal-closeButton');
-            closeBtn.click();
+            if (closeBtn) { closeBtn.click(); }
           }, 50);
           document.addEventListener('DOMContentLoaded', () => {
             const timeoutId = setTimeout(() => {
