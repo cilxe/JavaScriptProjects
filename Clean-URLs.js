@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.7.0
+// @version            0.7.1
 // @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -69,9 +69,8 @@
   + '(_from)$|scm|referrer';
   let paramsReg = new RegExp(paramsRegStr);
 
-  const commonParams = ['spm', 'mkt', 'src', 'from', 'response_type',
-    'redirect_uri', 'source', 'vd_source', 'alias', 'brand',
-    'curator_clanid', 'snr', 'redir', 'sprefix',
+  const commonParams = ['spm', 'mkt', 'src', 'from', 'source', 'alias',
+    'vd_source', 'brand', 'curator_clanid', 'snr', 'redir', 'sprefix',
     'utm_id', 'utm_content', 'utm_source', 'utm_medium', 'utm_sources',
     'utm_term', 'utm_campaign', 'utm_referrer', 'utm_keyword', 'ref'];
 
@@ -80,8 +79,8 @@
     'session_id', 'business', 'sort_field', 'is_room_feed', 'visit_id',
     'is_live_full_webview', 'is_live_webview', 'vt', 'theme', 'noReffer',
     'timestamp', 'unique_k', 'hasBack', 'noTitleBar', 'plat_id', 'is_preview',
-    'buvid', 'up_id', 'is_story_h5', 'hybrid_set_header', 'lottery_id',
-    'jumpLinkType', '-Abrowser', 'from', 'pagefrom', 'seid'];
+    'buvid', 'up_id', 'is_story_h5', 'hybrid_set_header', 'lottery_id', 'seid',
+    'jumpLinkType', '-Abrowser', 'from', 'pagefrom', 'schema', 'preUrl'];
     // 'event_source_type', 'bsource', 'search_source', 'share_plat', 'goFrom',
     // 'sourceFrom', 'share_source', 'from_source', 'share_tag'
     // , 'refer_from', 'broadcast_type', 'dynamicspm_id_from', 'msource', 
@@ -1270,12 +1269,14 @@
       removeCustomAddedParam(prompt(MenuRemoveParam, ''));
     });
     window.addEventListener('urlchange', () => {
-      restoreState(siteParams); cleanLinks(siteParams);
+      restoreState(siteParams);
+      cleanLinks(siteParams);
       blockClickEvents(siteParams, 0);
     });
     window.addEventListener('keydown', (e) => { // [Alt + Shift + X]
       if (e.key === 'X' && e.altKey && e.shiftKey) {
-        restoreState(siteParams); cleanLinks(siteParams);
+        restoreState(siteParams);
+        cleanLinks(siteParams);
       }
     });
   })();
@@ -1283,6 +1284,10 @@
 
 /*
 # Changelog
+v0.7.1 2023.09.10  
+- Restore the essential parameters for discord callbacks.
+- Clean more parameters.
+
 v0.7.0 2023.09.08  
 - Clean more tracking params on bestbuy|amazon|baidu|douyin|ebay|jd.
 - Improves the performance on ali sites.
