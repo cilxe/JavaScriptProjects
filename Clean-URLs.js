@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.7.1
+// @version            0.7.2
 // @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -80,12 +80,14 @@
     'is_live_full_webview', 'is_live_webview', 'vt', 'theme', 'noReffer',
     'timestamp', 'unique_k', 'hasBack', 'noTitleBar', 'plat_id', 'is_preview',
     'buvid', 'up_id', 'is_story_h5', 'hybrid_set_header', 'lottery_id', 'seid',
-    'jumpLinkType', '-Abrowser', 'from', 'pagefrom', 'schema', 'preUrl'];
-    // 'event_source_type', 'bsource', 'search_source', 'share_plat', 'goFrom',
-    // 'sourceFrom', 'share_source', 'from_source', 'share_tag'
-    // , 'refer_from', 'broadcast_type', 'dynamicspm_id_from', 'msource', 
-    // 'csource', 'from_spmid', 'spm_id_from', 'spm_id', 'share_session_id', 
-  const biliParamsReg = /^(utm_|share_|spm|from_)|(From|_from|source|_type|Type)$/;
+    '-Abrowser', 'from', 'pagefrom', 'schema', 'preUrl', 'jumpLinkType',
+    'referfrom', 'is_story_h5', 'spm_id', 'share_session_id', 'plat_id'];
+  // 'share_medium', 'share_plat', 'share_source', 'share_tag',
+  // 'from_source', 'from_spmid', 'goFrom', 'sourceFrom',
+  // 'refer_from', 'spm_id_from',  'dynamicspm_id_from', 'extra_jump_from',
+  // 'event_source_type', 'search_source', 'bsource', 'msource', 'csource',
+  // 'p2p_type', 'broadcast_type',
+  const biliParamsReg = /^(utm_|share_|spm|from_)|(From|_from|source|_type)$/;
 
   const baiduParams = ['rsv_idx', 'hisfilter', 'rsf', 'rsv_pq', 'rsv_t', 'qid', // baidu
     'rsv_dl', 'oq', 'gpc', 'usm', 'tfflag', 'ie', 'bs', 'rqlang', 'tn',
@@ -224,11 +226,7 @@
             Array.from(params.keys()).forEach((k) => { if (biliParamsReg.test(k)) { params.delete(k); } });
             if (links[i].href !== url.href) { links[i].href = url.href; }
           }
-          // Remove Bilibili Ads   // 3. Bilibili
-          if (links[i].hostname.endsWith('cm.bilibili.com')
-            || /right-bottom-banner|bannerAd/.test(links[i].getAttribute('id'))) {
-            links[i].remove();
-          }
+          // 3. Bilibili
           // Clean <a> link data-url on video/bangumi of bilibili.com
           const dataLink = links[i].getAttribute('data-url');
           if (/^(https?:\/\/|\/\/)[a-zA-Z0-9-.]{1,128}\.[a-z]{2,15}/.test(dataLink)) {
@@ -587,7 +585,9 @@
         // _auth_require _presentation_style _hide_status_bar _landscape _theme _theme_device
         commonParams.push('game_version', 'visit_device', 'device_type', 'plat_type');
         paramsReg = /^(track|utm|spm_|from_|hyl_|bbs_|mhy_)|_from$/;
-        autoClick(['.el-dialog__headerbtn'], 50, 3000);
+        if (!pageHost.endsWith('account.hoyoverse.com')) {
+          autoClick(['.el-dialog__headerbtn'], 50, 3000);
+        }
         break;
       case pageHost.endsWith('douban.com'):
         commonParams.push('target_user_id', 'dcs', 'dcm', 'dt_time_source', 'channel');
@@ -735,14 +735,19 @@
   function bilibiliListenMoving() {
     let x = 0; let y = 0;
     if (/live.bilibili.com$/.test(pageHost)
-    || /^https?:\/\/(www|m).bilibili\.com\/(video|bangumi)/.test(pageURL)) {
+      || /^https?:\/\/(www|m).bilibili\.com\/(video|bangumi)/.test(pageURL)) {
       window.onpointermove = (e) => {
-        if (e.clientY < 200) { cleanLinks(bilibiliParams); blockBClickEvents(); }
+        if (e.clientY < 200) {
+          cleanLinks(bilibiliParams);
+          blockBClickEvents();
+        }
       };
     } else {
       window.onpointermove = (e) => {
         if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
-          cleanLinks(bilibiliParams); blockBClickEvents(); x = e.clientX; y = e.clientY;
+          cleanLinks(bilibiliParams);
+          blockBClickEvents();
+          x = e.clientX; y = e.clientY;
         }
       };
     }
@@ -752,7 +757,9 @@
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop;
       if (scrolls - topScroll > 120) {
-        cleanLinks(bilibiliParams); removeBiliAnnoyances(0); blockBClickEvents();
+        cleanLinks(bilibiliParams);
+        removeBiliAnnoyances(0);
+        blockBClickEvents();
         topScroll = scrolls;
       }
     };
@@ -1226,13 +1233,15 @@
         break; // REST:  space passport account message member t app manga show link biligame mall pay
       case /(bilibili|biligame)\.com$/.test(pageHost):
         siteParams = bilibiliParams; paramsReg = biliParamsReg;
-        restoreState(bilibiliParams); cleanLinks(bilibiliParams);
+        restoreState(bilibiliParams);
+        cleanLinks(bilibiliParams);
         removeBiliAnnoyances(0); blockBClickEvents();
-        biliListenScrolling(); bilibiliListenMoving();
+
         if (pageHost.endsWith('www.bilibili.com')) cleanBVideoURL();
         if (pageHost.endsWith('search.bilibili.com')) cleanBSearch();
         if (pageHost.endsWith('live.bilibili.com')) cleanBLive(DELAY_TIME.normal);
         doc.addEventListener('DOMContentLoaded', () => {
+          biliListenScrolling(); bilibiliListenMoving();
           removeBiliMetadData();
           removeBiliAnnoyances(1000);
           blockBClickEvents();
@@ -1284,6 +1293,11 @@
 
 /*
 # Changelog
+v0.7.2 2023.09.16  
+- Fixed an issue that some prompts unable to close on live.bilibili.com.
+- Fixed an issue that some contents may not be loaded properly.
+- Fixed an issue that certain login prompts may failed to popup.
+
 v0.7.1 2023.09.10  
 - Restore the essential parameters for discord callbacks.
 - Clean more parameters.
