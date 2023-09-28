@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.7.2
+// @version            0.7.3
 // @description        净化所有网站的跟踪链接和事件
 // @description:zh-CN  净化所有网站的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -361,6 +361,20 @@
       clearTimeout(tid);
     }, delayTime);
   }
+  // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Custom clean ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
+  // Youku, Tudou, Douyin, Amazon
+  function customClean(siteParams) {
+    restoreState(siteParams); cleanLinks(siteParams);
+    let x = 0; let y = 0;
+    doc.addEventListener('pointermove', (e) => {
+      if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
+        cleanLinks(siteParams); x = e.clientX; y = e.clientY;
+      }
+    });
+    doc.addEventListener('DOMContentLoaded', () => {
+      blockClickEvents(siteParams, 0);
+    });
+  }
   // Hide elements (enter)
   function hideElement(attrs, intervals, duration, isRemove) {
     const intervalID = setInterval(() => {
@@ -473,8 +487,29 @@
       case pageHost.endsWith('vk.com'):
         commonParams.push('scheme', 'initial_stats_info');
         break;
-      case /(microsoft|bing|xbox)\.com$/.test(pageHost):
-        commonParams.push('response_mode', 'exp', 'FORM', 'xr', 'cat0');
+      case /(microsoft|bing|xbox|skype|office|microsoft365)\.com$/.test(pageHost):
+        commonParams.push(
+          'OCID',
+          'ICID',
+          'icid',
+          'CLCID',
+          'clcid',
+          'es',
+          'response_mode',
+          'exp',
+          'FORM',
+          'xr',
+          'cat0',
+          'culture',
+          'country',
+          'WT.mc_id',
+          'uiflavor', // office
+          'activetab',
+          'fl',
+          'client_id',
+          'wreply',
+        );
+
         break;
       case pageHost.endsWith('msn.com'): // No effect on the [Shadow Root] elements.
         commonParams.push('ocid', 'cvid', 'ei');
@@ -488,7 +523,6 @@
           'irgwc',
           'mpid',
           'irclickid',
-          'nrtv_cid',
           'intlreferer',
           'intl',
           'browsedCategory',
@@ -499,7 +533,9 @@
           'ks',
           'sc',
           '_dyncharset',
-        );
+          'icmp',
+        ); // 'subId1', 'subId2', 'subId3', 'nrtv_cid', 'nrtv_as_src',
+        paramsReg = /^(utm_|nrtv_|subId)/;
         break;
       case pageHost.endsWith('github.com'):
         commonParams.push('ref_cta', 'ref_loc', 'ref_page');
@@ -585,22 +621,26 @@
         // _auth_require _presentation_style _hide_status_bar _landscape _theme _theme_device
         commonParams.push('game_version', 'visit_device', 'device_type', 'plat_type');
         paramsReg = /^(track|utm|spm_|from_|hyl_|bbs_|mhy_)|_from$/;
-        if (!pageHost.endsWith('account.hoyoverse.com')) {
+        if (!/account.(hoyoverse|hoyolab).com/.test(pageHost)) {
           autoClick(['.el-dialog__headerbtn'], 50, 3000);
         }
+        customClean(commonParams);
         break;
       case pageHost.endsWith('douban.com'):
-        commonParams.push('target_user_id', 'dcs', 'dcm', 'dt_time_source', 'channel');
+        commonParams.push(
+          'target_user_id',
+          'dcs',
+          'dcm',
+          'dt_time_source',
+          'channel',
+          'fullscreen',
+          'autorotate',
+          'hidenav',
+        );
         break;
       case /(imdb|boxofficemojo)\.com$/.test(pageHost):
         commonParams.push('rf', 'imdbPageAction', 'u', 'tag');
         paramsReg = amznParamsReg;
-        break;
-      case pageHost.endsWith('xda-developers.com'):
-        commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign', 'newsletter_popup');
-        break;
-      case pageHost.endsWith('cctv.com'):
-        commonParams.push('toc_style_id');
         break;
       case pageHost.endsWith('gitee.com'):
         (() => {
@@ -616,6 +656,12 @@
           });
         })();
         break;
+      case pageHost.endsWith('xda-developers.com'):
+        commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign', 'newsletter_popup');
+        break;
+      case pageHost.endsWith('cctv.com'):
+        commonParams.push('toc_style_id');
+        break;
       case pageHost.endsWith('fiverr.com'):
         commonParams.push(
           'pckg_id',
@@ -626,6 +672,22 @@
           'pos',
           'seller_online',
           'context',
+        );
+        break;
+      case pageHost.endsWith('newegg.com'):
+        commonParams.push(
+          'cm_sp',
+          'nextpage',
+        );
+        break;
+      case pageHost.endsWith('theverge.com'):
+        commonParams.push(
+          'u1',
+          'tag',
+          'ascsubtag',
+          'subId1',
+          'subId2',
+          'subId3',
         );
         break;
       default: break;
@@ -1064,8 +1126,7 @@
           'wc',
         );
         break;
-      default:
-        break;
+      default: break;
     }
     restoreState(aliParams); cleanLinks(aliParams);
     deferredCleanLinks(aliParams, DELAY_TIME.slow);
@@ -1137,20 +1198,6 @@
           navigator.clipboard.writeText(shareURL.href);
         });
       }
-    });
-  }
-  // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Custom clean ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
-  // Youku, Tudou, Douyin, Amazon
-  function customClean(siteParams) {
-    restoreState(siteParams); cleanLinks(siteParams);
-    let x = 0; let y = 0;
-    doc.addEventListener('pointermove', (e) => {
-      if (Math.abs(e.clientX - x) > 20 || Math.abs(e.clientY - y) > 20) {
-        cleanLinks(siteParams); x = e.clientX; y = e.clientY;
-      }
-    });
-    doc.addEventListener('DOMContentLoaded', () => {
-      blockClickEvents(siteParams, 0);
     });
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Main Function ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
@@ -1290,9 +1337,12 @@
     });
   })();
 })();
-
 /*
 # Changelog
+v0.7.3 2023.09.28  
+- Clean more tracking parameters on (newegg|bestbuy|skype|office|microsoft365|douban).com.
+- Minor issue fixes.
+
 v0.7.2 2023.09.16  
 - Fixed an issue that some prompts unable to close on live.bilibili.com.
 - Fixed an issue that some contents may not be loaded properly.
