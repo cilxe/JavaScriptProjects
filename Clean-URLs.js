@@ -11,9 +11,9 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.7.3
-// @description        净化所有网站的跟踪链接和事件
-// @description:zh-CN  净化所有网站的跟踪链接和事件
+// @version            0.7.4
+// @description        净化所有网站上的跟踪链接和事件
+// @description:zh-CN  净化所有网站上的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
 // @description:en     Clean all tracking URLs, block tracking events on all websites
 // @description:ja     すべてのサイトの追跡リンクとイベントをサニタイズする
@@ -28,6 +28,7 @@
 // @grant              GM_registerMenuCommand
 // @grant              GM_getValue
 // @grant              GM_setValue
+// @grant              unsafeWindow
 // @icon               data:image/png;base64,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
 // @license            MIT
 // ==/UserScript==
@@ -65,14 +66,15 @@
   let topScroll = 0;
   const hostRegex = /[a-z0-9-]{1,128}\.[a-z]{2,15}$/;
   // Matches all tracking parameters *contains/starts/ends* with the name
-  const paramsRegStr = '^(spm|from_|ref_|track|trk|share_)|'
-  + '(_from)$|scm|referrer';
+  const paramsRegStr = '^(spm|from_|ref_|track|trk|share_|embeds_|refer_)|'
+  + '_from$|scm|referrer';
   let paramsReg = new RegExp(paramsRegStr);
 
   const commonParams = ['spm', 'mkt', 'src', 'from', 'source', 'alias',
     'vd_source', 'brand', 'curator_clanid', 'snr', 'redir', 'sprefix',
     'utm_id', 'utm_content', 'utm_source', 'utm_medium', 'utm_sources',
-    'utm_term', 'utm_campaign', 'utm_referrer', 'utm_keyword', 'ref'];
+    'utm_term', 'utm_campaign', 'utm_referrer', 'utm_keyword', 'ref',
+    'feature'];
 
   // Tracking or other params for certain sites
   const bilibiliParams = ['vd_source', 'hotRank', 'launch_id', 'popular_rank',
@@ -81,9 +83,9 @@
     'timestamp', 'unique_k', 'hasBack', 'noTitleBar', 'plat_id', 'is_preview',
     'buvid', 'up_id', 'is_story_h5', 'hybrid_set_header', 'lottery_id', 'seid',
     '-Abrowser', 'from', 'pagefrom', 'schema', 'preUrl', 'jumpLinkType',
-    'referfrom', 'is_story_h5', 'spm_id', 'share_session_id', 'plat_id'];
+    'referfrom', 'spm_id', 'plat_id', 'mid'];
   // 'share_medium', 'share_plat', 'share_source', 'share_tag',
-  // 'from_source', 'from_spmid', 'goFrom', 'sourceFrom',
+  // 'from_source', 'from_spmid', 'goFrom', 'sourceFrom', 'share_session_id',
   // 'refer_from', 'spm_id_from',  'dynamicspm_id_from', 'extra_jump_from',
   // 'event_source_type', 'search_source', 'bsource', 'msource', 'csource',
   // 'p2p_type', 'broadcast_type',
@@ -121,16 +123,15 @@
   const aliSitesReg = new RegExp(aliSitesStr);
 
   const aliParams = [
-    'spm', 'acm', 'scm', 'scene', 'from',
+    'spm', 'acm', 'scm', 'scene', 'from', 'pvid',
   ]; // 'wh_pid', 'wh_random_str', 'wx_navbar_transparent', 'wh_weex'
-  const aliParamsRegStr = '^(utm_|spm_|from_|ref|track|wh_|wx_)|'
-    + '^(lwfrom|disableNav|es|rootPageId)$';
+  const aliParamsRegStr = '^(utm_|spm_|from_|ref|track|wh_|wx_)';
   const aliParamsReg = new RegExp(aliParamsRegStr);
 
   const amaznParams = ['content-id', 'qid', 'crid', 'isAmazonFulfilled',
-    'sbo', 'plattr'];
-  const amznParamsRegStr = '_ref|^(utm_|ref|pd_rd_|pf_rd_|track|sc_)'
-  + '|^(sprefix|ld|_encoding|ie|ds)$';
+    'sbo', 'plattr', 'sprefix', 'ld', '_encoding', 'ie', 'ds',
+  ];
+  const amznParamsRegStr = '_ref|^(utm_|ref|pd_rd_|pf_rd_|track|sc_)';
   const amznParamsReg = new RegExp(amznParamsRegStr, 'i');
 
   const ytParams = commonParams.concat(['embeds_referring_euri', 'embeds_euri',
@@ -317,7 +318,6 @@
   // Block link clicking events
   function blockClickEvents(siteParams, delayTime) {
     const tid = setTimeout(() => {
-      cleanLinks(siteParams);
       const handleLinkClick = () => { cleanLinks(siteParams); };
       const handleLinkCM = (e) => { e.stopImmediatePropagation(); cleanLinks(siteParams); };
       const handleLinkClickN = () => { deferredCleanLinks(siteParams, 0); };
@@ -375,7 +375,7 @@
       blockClickEvents(siteParams, 0);
     });
   }
-  // Hide elements (enter)
+  // Hide elements (common)
   function hideElement(attrs, intervals, duration, isRemove) {
     const intervalID = setInterval(() => {
       attrs.forEach((attr) => {
@@ -394,21 +394,50 @@
       }, duration);
     });
   }
-  // Auto close (enter)
-  function autoClick(attrs, intervals, duration) {
+  // Auto close (common)
+  function autoClick(attrs, attrIndex, intervals, duration) {
     const intervalID = setInterval(() => {
       attrs.forEach((attr) => {
-        const closeBtn = document.querySelector(attr);
+        const closeBtn = document.querySelectorAll(attr)[attrIndex];
         if (closeBtn) { closeBtn.click(); }
       });
-
-      const closeBtn = document.querySelector('.Modal-closeButton');
-      if (closeBtn) { closeBtn.click(); }
     }, intervals);
     document.addEventListener('DOMContentLoaded', () => {
       const timeoutId = setTimeout(() => {
         clearInterval(intervalID); clearTimeout(timeoutId);
       }, duration);
+    });
+  }
+  // Auto close (mutation observer)
+  function autoClose(loginWindow, closeButton, loginButton, timeout) {
+    doc.addEventListener('DOMContentLoaded', () => {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (document.querySelector(loginWindow)) {
+              if (node.querySelector(closeButton)) {
+                node.querySelector(closeButton).click();
+              }
+            }
+          });
+        });
+      });
+      observer.observe(doc, { childList: true, subtree: true });
+      if (document.querySelector(loginButton)) {
+        const timeoutID = setTimeout(() => {
+          document.querySelector(loginButton)
+            .addEventListener('click', () => {
+              observer.disconnect();
+            });
+          clearTimeout(timeoutID);
+        }, DELAY_TIME.normal * 2);
+      } else { // Set timeout to disconnect observer whithout login button
+        const timeoutID = setTimeout(() => {
+          observer.disconnect();
+          console.log(observer);
+          clearTimeout(timeoutID);
+        }, timeout);
+      }
     });
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Common sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
@@ -456,6 +485,8 @@
           'contextUrn',
           'ct',
           'pt',
+          'refId',
+          'position',
         );
         document.addEventListener('DOMContentLoaded', () => {
           blockClickEvents(commonParams, 8500);
@@ -489,6 +520,7 @@
         break;
       case /(microsoft|bing|xbox|skype|office|microsoft365)\.com$/.test(pageHost):
         commonParams.push(
+          'ocid',
           'OCID',
           'ICID',
           'icid',
@@ -497,6 +529,7 @@
           'es',
           'response_mode',
           'exp',
+          'form',
           'FORM',
           'xr',
           'cat0',
@@ -508,11 +541,12 @@
           'fl',
           'client_id',
           'wreply',
+          'cobrandid', // signin
+          'deeplink',
         );
-
         break;
-      case pageHost.endsWith('msn.com'): // No effect on the [Shadow Root] elements.
-        commonParams.push('ocid', 'cvid', 'ei');
+      case /msn.(com|cn)$/.test(pageHost): // No effect on the [Shadow Root] elements.
+        commonParams.push('ocid', 'cvid', 'ei', '.cn', 'fullscreen');
         break;
       case /bestbuy\.(com|ca)$/.test(pageHost):
         commonParams.push(
@@ -551,7 +585,7 @@
         break;
       case pageHost.endsWith('zhihu.com'):
         commonParams.push('search_source', 'hybrid_search_source', 'hybrid_search_extra');
-        autoClick(['.Modal-closeButton'], 50, 3000);
+        autoClose('.Modal-content', '.Modal-closeButton', '.AppHeader-profile button', 2000);
         break;
       case /(163|126|yeah)\.(com|net)$/.test(pageHost):
         commonParams.push('scene', 'session_id', 'fromDlpro', 'dltype');
@@ -621,9 +655,26 @@
         // _auth_require _presentation_style _hide_status_bar _landscape _theme _theme_device
         commonParams.push('game_version', 'visit_device', 'device_type', 'plat_type');
         paramsReg = /^(track|utm|spm_|from_|hyl_|bbs_|mhy_)|_from$/;
-        if (!/account.(hoyoverse|hoyolab).com/.test(pageHost)) {
-          autoClick(['.el-dialog__headerbtn'], 50, 3000);
-        }
+        // login window
+        (() => {
+          let time = 200000; let closeBtn; let index = 0;
+          if (!/account.(hoyoverse|hoyolab).com$/.test(pageHost)) {
+            time = new Date().getTime();
+            // eslint-disable-next-line no-undef
+            GM_setValue('time', time);
+          } // eslint-disable-next-line no-undef
+          if (new Date().getTime() - GM_getValue('time') < 6500) {
+            if (/account.hoyoverse.com$/.test(pageHost)) {
+              closeBtn = ['.el-dialog__headerbtn'];
+            } else if (/account.hoyolab.com$/.test(pageHost)) {
+              closeBtn = ['.el-dialog__headerbtn']; index = 1;
+            } else if (/user.miyoushe.com$/.test(pageHost)) {
+              time = new Date().getTime();
+              closeBtn = ['.card-close'];
+            }
+            autoClick(closeBtn, index, 50, 6000);
+          }
+        })();
         customClean(commonParams);
         break;
       case pageHost.endsWith('douban.com'):
@@ -689,6 +740,34 @@
           'subId2',
           'subId3',
         );
+        break;
+      case pageHost.endsWith('bluestacks.com'):
+        commonParams.push(
+          'platform',
+          'client_uuid',
+          'app_pkg',
+          'platform_cloud',
+          'preferred_lang',
+          'gaCookie',
+          'gclid',
+          'clickid',
+          'msclkid',
+          'affiliateId',
+          'offerId',
+          'transaction_id',
+          'aff_sub',
+          'first_landing_page',
+          'user_id',
+          'incompatible',
+          'bluestacks_version',
+          'referrer',
+          'download_page_referrer',
+        ); // win_version, mac_version, exit_utm_campaign, 
+        // device_memory, device_cpu_cores
+        paramsReg = /^device_|(_version|utm_campaign)$/;
+        break;
+      case pageHost.endsWith('xiaohongshu.com'):
+        autoClose('.login-container', '.close-button', '.login-btn', 2000);
         break;
       default: break;
     }
@@ -1063,12 +1142,12 @@
     switch (true) { // taobao.com/tmall.com/tmall.hk
       case /(taobao|tmall).(com|hk)$/.test(pageHost):
         aliParams.push(
+          'scm2',
           'stats_click',
           'initiative_id',
           'source',
           'suggest',
           'suggest_query',
-          'pvid',
           'iconType',
           'traceId',
           'relationId',
@@ -1084,16 +1163,20 @@
           'tbSocialPopKey',
           'bxsign',
           'utparam',
-          'spm',
           'eurl',
           'itemIds',
           'country',
           'epid',
           'user_number_id',
+          'rootPageId',
+          'lwfrom',
+          'disableNav',
+          'es',
           'rand',
           '_lgt_',
           'x5referer',
           'status_bar_transparent',
+          'tracelog',
         );
         break;
       case pageHost.endsWith('fliggy.com'):
@@ -1101,6 +1184,8 @@
         break;
       case pageHost.endsWith('1688.com'):
         aliParams.push(
+          'scm2',
+          'topOfferIds',
           '__pageId__',
           'resourceId',
           'offerId',
@@ -1114,6 +1199,18 @@
           'object_type',
           'delivery_pool_id',
           'delivery_pool_type',
+          'ilike_session',
+          'tracelog',
+          'clickid',
+          'sessionid',
+          'cosite',
+          '_p_isad',
+          'exp',
+          'rootPageId',
+          'lwfrom',
+          'disableNav',
+          'es',
+          'hpageId',
         );
         break;
       case /(lazada|trendyol).[a-z.]{2-10}/.test(pageHost):
@@ -1128,7 +1225,7 @@
         break;
       default: break;
     }
-    restoreState(aliParams); cleanLinks(aliParams);
+    restoreState(aliParams);
     deferredCleanLinks(aliParams, DELAY_TIME.slow);
     doc.addEventListener('DOMContentLoaded', () => {
       blockClickEvents(aliParams, DELAY_TIME.fast);
@@ -1143,10 +1240,21 @@
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Youtube ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanYoutube() {
+    function blockytLinksRedirection(timeout) {
+      setTimeout(() => {
+        const outerLinks = document.getElementsByClassName('yt-core-attributed-string--link-inherit-color');
+        for (let i = 0; i < outerLinks.length; i += 1) {
+          outerLinks[i].addEventListener('click', (e) => {
+            e.stopPropagation();
+          }, true);
+        }
+      }, timeout);
+    }
     restoreState(ytParams); cleanLinks(ytParams);
     doc.addEventListener('DOMContentLoaded', () => {
       deferredCleanLinks(ytParams, DELAY_TIME.slow);
       blockClickEvents(ytParams, 0);
+      blockytLinksRedirection(DELAY_TIME.normal * 2);
     });
     doc.addEventListener('contextmenu', () => {
       cleanLinks(ytParams);
@@ -1159,7 +1267,9 @@
       window.onscroll = () => {
         const scrolls = doc.documentElement.scrollTop;
         if (scrolls - topScroll > 120) {
-          cleanLinks(ytParams); topScroll = scrolls;
+          cleanLinks(ytParams);
+          blockytLinksRedirection(0);
+          topScroll = scrolls;
         }
       };
       // Modifications for CM of youtube player
@@ -1295,7 +1405,8 @@
         });
         break;
       case aliSitesReg.test(pageHost):
-        siteParams = aliParams; paramsReg = aliParamsReg; cleanAliSites();
+        siteParams = aliParams; paramsReg = aliParamsReg;
+        cleanAliSites();
         break;
       case pageHost.endsWith('csdn.net'):
         siteParams = csdnParams; cleanCSDN();
@@ -1306,7 +1417,7 @@
         break;
       case /(tiktok|douyin)\.com$/.test(pageHost):
         siteParams = douyinParams; customClean(siteParams);
-        autoClick(['.dy-account-close'], 100, DELAY_TIME.slow * 2);
+        autoClose('#login-pannel', '.dy-account-close', '#-invalid', 5000);
         break;
       default:
         siteParams = commonClean();
@@ -1314,7 +1425,9 @@
     }
     addCustomParam('', siteParams); // eslint-disable-next-line no-undef
     GM_registerMenuCommand(MenuClean, () => { // Menu: Retry clean all links
-      restoreState(siteParams); cleanLinks(siteParams); console.log(siteParams);
+      restoreState(siteParams);
+      cleanLinks(siteParams);
+      console.log(siteParams);
     }, 'C');
     // eslint-disable-next-line no-undef
     GM_registerMenuCommand(MenuAddParams, () => { // Menu: Add a custom param
@@ -1337,8 +1450,14 @@
     });
   })();
 })();
+
 /*
 # Changelog
+v0.7.4 2023.10.22
+- Clean more tracking parameters on 1688|microsoft|linkedin|bluestacks.com and for all.
+- Skip the links redirection on youtube video.
+- Minor improvements.
+
 v0.7.3 2023.09.28  
 - Clean more tracking parameters on (newegg|bestbuy|skype|office|microsoft365|douban).com.
 - Minor issue fixes.
