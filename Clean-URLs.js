@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.7.4
+// @version            0.7.5
 // @description        净化所有网站上的跟踪链接和事件
 // @description:zh-CN  净化所有网站上的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -98,6 +98,8 @@
     'ct', 'lm', 'site', 'sites', 'fr', 'cl', 'bsst', 'lid', 'rsv_spt',
     'rsv_bp', 'src', 'sfrom', 'refer', 'zp_fr', 'channel', 'p_from', 'n_type',
     'eqid', '_at_', 'sa', 'pd', 'source', 'tag_key', 'uname', 'uid',
+    'fromModule', 'lemmaFrom', 'structureId', 'structureClickId',
+    'structureItemId',
     'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', 'frwh', // tieba
     'obj_id', 'fid', 'fname', '_t', 'topic_name', 'frs', 'share_from', 'tpl',
     'u', 'tb_mod', 'tb_fr', 'share', 'sfc', 'idfrom', 'client_version', 'st',
@@ -205,6 +207,9 @@
           if (hostRegex.test(links[i].hostname)) {
             const url = new URL(links[i].href);
             const params = url.searchParams;
+            if (links[i].hostname === 'passport.baidu.com') {
+              siteParams.splice(siteParams.indexOf('u'), 1);
+            }
             if (links[i].innerText === '应用中心') { params.set('kw', links[i].innerText); } //  2. Tieba.baidu.com
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
             if (links[i].href !== url.href) { links[i].href = url.href; }
@@ -344,8 +349,8 @@
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
         if (hostRegex.test(links[i].hostname)) {
-          links[i].removeEventListener('mousedown', handleLinkCM);
-          links[i].addEventListener('mousedown', handleLinkCM);
+          // links[i].removeEventListener('mousedown', handleLinkCM); // mail.qq.com/web.telegram.org
+          // links[i].addEventListener('mousedown', handleLinkCM);
           links[i].removeEventListener('keyup', handleLinkCM);
           links[i].addEventListener('keyup', handleLinkCM);
           links[i].removeEventListener('click', handleLinkClick);
@@ -434,7 +439,6 @@
       } else { // Set timeout to disconnect observer whithout login button
         const timeoutID = setTimeout(() => {
           observer.disconnect();
-          console.log(observer);
           clearTimeout(timeoutID);
         }, timeout);
       }
@@ -594,7 +598,7 @@
         commonParams.push('mark_id', 'entry', '_rand', 'sudaref', 'refer', 'band_rank', 'gid', 'ua');
         break;
       case pageHost.endsWith('qq.com'):
-        commonParams.push('mod', 'ADTAG', 'fromSource');
+        commonParams.push('ADTAG', 'fromSource');
         break;
       case /ebay\.[a-z.]{2,15}$/.test(pageHost):
         commonParams.push(
@@ -658,7 +662,7 @@
         // login window
         (() => {
           let time = 200000; let closeBtn; let index = 0;
-          if (!/account.(hoyoverse|hoyolab).com$/.test(pageHost)) {
+          if (!/account.(hoyoverse|hoyolab).com$|user.miyoushe.com$/.test(pageHost)) {
             time = new Date().getTime();
             // eslint-disable-next-line no-undef
             GM_setValue('time', time);
@@ -667,7 +671,7 @@
             if (/account.hoyoverse.com$/.test(pageHost)) {
               closeBtn = ['.el-dialog__headerbtn'];
             } else if (/account.hoyolab.com$/.test(pageHost)) {
-              closeBtn = ['.el-dialog__headerbtn']; index = 1;
+              closeBtn = ['.el-dialog__headerbtn']; index = 0;
             } else if (/user.miyoushe.com$/.test(pageHost)) {
               time = new Date().getTime();
               closeBtn = ['.card-close'];
@@ -1453,6 +1457,10 @@
 
 /*
 # Changelog
+v0.7.5 2023.11.21
+- Resotore necessary parameters for baidu.com|qq.com in some cases.
+- Minor adjustments.
+
 v0.7.4 2023.10.22
 - Clean more tracking parameters on 1688|microsoft|linkedin|bluestacks.com and for all.
 - Skip the links redirection on youtube video.
