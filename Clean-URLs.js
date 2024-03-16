@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.7.5
+// @version            0.7.6.2
 // @description        净化所有网站上的跟踪链接和事件
 // @description:zh-CN  净化所有网站上的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -28,7 +28,6 @@
 // @grant              GM_registerMenuCommand
 // @grant              GM_getValue
 // @grant              GM_setValue
-// @grant              unsafeWindow
 // @icon               data:image/png;base64,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
 // @license            MIT
 // ==/UserScript==
@@ -83,13 +82,14 @@
     'timestamp', 'unique_k', 'hasBack', 'noTitleBar', 'plat_id', 'is_preview',
     'buvid', 'up_id', 'is_story_h5', 'hybrid_set_header', 'lottery_id', 'seid',
     '-Abrowser', 'from', 'pagefrom', 'schema', 'preUrl', 'jumpLinkType',
-    'referfrom', 'spm_id', 'plat_id', 'mid'];
-  // 'share_medium', 'share_plat', 'share_source', 'share_tag',
-  // 'from_source', 'from_spmid', 'goFrom', 'sourceFrom', 'share_session_id',
-  // 'refer_from', 'spm_id_from',  'dynamicspm_id_from', 'extra_jump_from',
-  // 'event_source_type', 'search_source', 'bsource', 'msource', 'csource',
-  // 'p2p_type', 'broadcast_type',
-  const biliParamsReg = /^(utm_|share_|spm|from_)|(From|_from|source|_type)$/;
+    'referfrom', 'spm_id', 'plat_id', 'mid', 'p2p_type', 'broadcast_type',
+    'event_source_type'];
+  // 'share_medium', 'share_plat', 'share_source', 'share_tag'
+  // 'from_source', 'from_spmid', 'goFrom', 'sourceFrom', 'share_session_id'
+  // 'refer_from', 'spm_id_from',  'dynamicspm_id_from', 'extra_jump_from'
+  // 'search_source', 'bsource', 'msource', 'csource'
+  // 'p2p_type', 'broadcast_type', 'event_source_type'
+  const biliParamsReg = /^(utm_|share_|spm|from_)|(From|_from|source)$/;
 
   const baiduParams = ['rsv_idx', 'hisfilter', 'rsf', 'rsv_pq', 'rsv_t', 'qid', // baidu
     'rsv_dl', 'oq', 'gpc', 'usm', 'tfflag', 'ie', 'bs', 'rqlang', 'tn',
@@ -99,7 +99,7 @@
     'rsv_bp', 'src', 'sfrom', 'refer', 'zp_fr', 'channel', 'p_from', 'n_type',
     'eqid', '_at_', 'sa', 'pd', 'source', 'tag_key', 'uname', 'uid',
     'fromModule', 'lemmaFrom', 'structureId', 'structureClickId',
-    'structureItemId',
+    'structureItemId', 'xzhid',
     'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', 'frwh', // tieba
     'obj_id', 'fid', 'fname', '_t', 'topic_name', 'frs', 'share_from', 'tpl',
     'u', 'tb_mod', 'tb_fr', 'share', 'sfc', 'idfrom', 'client_version', 'st',
@@ -125,7 +125,7 @@
   const aliSitesReg = new RegExp(aliSitesStr);
 
   const aliParams = [
-    'spm', 'acm', 'scm', 'scene', 'from', 'pvid',
+    'spm', 'acm', 'scm', 'scene', 'from', 'pvid', 'pvid2',
   ]; // 'wh_pid', 'wh_random_str', 'wx_navbar_transparent', 'wh_weex'
   const aliParamsRegStr = '^(utm_|spm_|from_|ref|track|wh_|wx_)';
   const aliParamsReg = new RegExp(aliParamsRegStr);
@@ -143,7 +143,7 @@
   // If <true> block [Lucky Draw (The Selection)] popups on live.bilibili.com.
   const BlockLivePopups = true;
 
-  // Add custom 'urlchange' event for pushState and replaceState
+  // Add a custom 'urlchange' event to pushState and replaceState
   (() => { //  [https://stackoverflow.com/a/52809105]
     const originalPushState = window.history.pushState;
     const originalReplaceState = window.history.replaceState;
@@ -428,7 +428,7 @@
         });
       });
       observer.observe(doc, { childList: true, subtree: true });
-      if (document.querySelector(loginButton)) {
+      if (document.querySelector(loginButton).click()) {
         const timeoutID = setTimeout(() => {
           document.querySelector(loginButton)
             .addEventListener('click', () => {
@@ -447,8 +447,20 @@
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ Common sites ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function commonClean() {
     switch (true) { // additional params for certain sites
-      case /google\.[a-z.]{2,15}$|about.google/.test(pageHost):
-        commonParams.push('device', 'pcampaignid', 'subid', 'hl', 'fg', 'ved', 'ei');
+      case /google\.[a-z.]{2,15}$|(about|wellbeing).google/.test(pageHost):
+        commonParams.push(
+          'device',
+          'pcampaignid',
+          'subid',
+          'hl',
+          'fg',
+          'ved',
+          'ei',
+          'prev',
+          'sig',
+          'sca_esv',
+          'visit_id',
+        );
         break;
       case pageHost.endsWith('facebook.com'):
         commonParams.push(
@@ -588,14 +600,33 @@
         commonParams.push('at', 'ct', 'itscg', 'itsct');
         break;
       case pageHost.endsWith('zhihu.com'):
-        commonParams.push('search_source', 'hybrid_search_source', 'hybrid_search_extra');
-        autoClose('.Modal-content', '.Modal-closeButton', '.AppHeader-profile button', 2000);
+        commonParams.push(
+          'search_source',
+          'hybrid_search_source',
+          'hybrid_search_extra',
+          'utm_psn',
+        );
+        autoClose(
+          '.Modal-content',
+          '.Modal-closeButton',
+          '.AppHeader-profile button',
+          2000,
+        );
         break;
       case /(163|126|yeah)\.(com|net)$/.test(pageHost):
         commonParams.push('scene', 'session_id', 'fromDlpro', 'dltype');
         break;
       case pageHost.endsWith('weibo.com'):
-        commonParams.push('mark_id', 'entry', '_rand', 'sudaref', 'refer', 'band_rank', 'gid', 'ua');
+        commonParams.push(
+          'mark_id',
+          'entry',
+          '_rand',
+          'sudaref',
+          'refer',
+          'band_rank',
+          'gid',
+          'ua',
+        );
         break;
       case pageHost.endsWith('qq.com'):
         commonParams.push('ADTAG', 'fromSource');
@@ -712,7 +743,13 @@
         })();
         break;
       case pageHost.endsWith('xda-developers.com'):
-        commonParams.push('tag', 'ascsubtag', 'asc_refurl', 'asc_campaign', 'newsletter_popup');
+        commonParams.push(
+          'tag',
+          'ascsubtag',
+          'asc_refurl',
+          'asc_campaign',
+          'newsletter_popup',
+        );
         break;
       case pageHost.endsWith('cctv.com'):
         commonParams.push('toc_style_id');
@@ -816,6 +853,7 @@
             + ' target="_blank" onmouseup="cleanLinks(bilibiliParams)">登录</a>';
         }
       } clearTimeout(tid);
+      doc.getElementById('right-bottom-banner').remove();
     }, delayTime);
   }
   // block clicking events (link, button, li)
@@ -1396,7 +1434,7 @@
         siteParams = bilibiliParams; paramsReg = biliParamsReg;
         restoreState(bilibiliParams);
         cleanLinks(bilibiliParams);
-        removeBiliAnnoyances(0); blockBClickEvents();
+        blockBClickEvents();
 
         if (pageHost.endsWith('www.bilibili.com')) cleanBVideoURL();
         if (pageHost.endsWith('search.bilibili.com')) cleanBSearch();
@@ -1404,8 +1442,7 @@
         doc.addEventListener('DOMContentLoaded', () => {
           biliListenScrolling(); bilibiliListenMoving();
           removeBiliMetadData();
-          removeBiliAnnoyances(1000);
-          blockBClickEvents();
+          deferredBlockBClickEvents(1000);
         });
         break;
       case aliSitesReg.test(pageHost):
@@ -1457,11 +1494,23 @@
 
 /*
 # Changelog
-v0.7.5 2023.11.21
+v0.7.6.2 2024.03.14  
+- Fix an issue that certain pages of bilibili may not be functional.
+
+v0.7.6.1 2024.03.12  
+- Fix an issue that certain pages of bilibili may not be functional.
+
+v0.7.6 2024.03.12  
+- Clean more parameters on google.com.
+- Remove a banner ad on bilibili's video page.
+- Adjust cleanup scope on t.bilibili.com.
+- Fix an issue that some contents may not be loaded properly on Zhihu or other sites.
+
+v0.7.5 2023.11.21  
 - Resotore necessary parameters for baidu.com|qq.com in some cases.
 - Minor adjustments.
 
-v0.7.4 2023.10.22
+v0.7.4 2023.10.22  
 - Clean more tracking parameters on 1688|microsoft|linkedin|bluestacks.com and for all.
 - Skip the links redirection on youtube video.
 - Minor improvements.
