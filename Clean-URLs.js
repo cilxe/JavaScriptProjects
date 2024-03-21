@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.7.6.2
+// @version            0.7.7
 // @description        净化所有网站上的跟踪链接和事件
 // @description:zh-CN  净化所有网站上的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -63,6 +63,7 @@
   const pageURL = window.location.href;
   const pagePath = window.location.pathname;
   let topScroll = 0;
+  let isLogin = false;
   const hostRegex = /[a-z0-9-]{1,128}\.[a-z]{2,15}$/;
   // Matches all tracking parameters *contains/starts/ends* with the name
   const paramsRegStr = '^(spm|from_|ref_|track|trk|share_|embeds_|refer_)|'
@@ -82,7 +83,7 @@
     'timestamp', 'unique_k', 'hasBack', 'noTitleBar', 'plat_id', 'is_preview',
     'buvid', 'up_id', 'is_story_h5', 'hybrid_set_header', 'lottery_id', 'seid',
     '-Abrowser', 'from', 'pagefrom', 'schema', 'preUrl', 'jumpLinkType',
-    'referfrom', 'spm_id', 'plat_id', 'mid', 'p2p_type', 'broadcast_type',
+    'referfrom', 'spm_id', 'plat_id', 'p2p_type', 'broadcast_type',
     'event_source_type'];
   // 'share_medium', 'share_plat', 'share_source', 'share_tag'
   // 'from_source', 'from_spmid', 'goFrom', 'sourceFrom', 'share_session_id'
@@ -420,7 +421,8 @@
         mutations.forEach((mutation) => {
           mutation.addedNodes.forEach((node) => {
             if (document.querySelector(loginWindow)) {
-              if (node.querySelector(closeButton)) {
+              if (node.querySelector(closeButton) && !isLogin) {
+                console.info('Close button auto clicked!');
                 node.querySelector(closeButton).click();
               }
             }
@@ -428,16 +430,19 @@
         });
       });
       observer.observe(doc, { childList: true, subtree: true });
-      if (document.querySelector(loginButton).click()) {
+      if (isLogin) {
         const timeoutID = setTimeout(() => {
-          document.querySelector(loginButton)
-            .addEventListener('click', () => {
-              observer.disconnect();
-            });
+          loginButton.addEventListener('click', () => {
+            isLogin = true;
+            console.info('YYYYYYYYYYYYYYYYYYYYYYYY');
+            observer.disconnect();
+          });
           clearTimeout(timeoutID);
         }, DELAY_TIME.normal * 2);
       } else { // Set timeout to disconnect observer whithout login button
         const timeoutID = setTimeout(() => {
+          console.info('TTTTTTTTTTTTTTTT');
+          isLogin = true;
           observer.disconnect();
           clearTimeout(timeoutID);
         }, timeout);
@@ -609,7 +614,7 @@
         autoClose(
           '.Modal-content',
           '.Modal-closeButton',
-          '.AppHeader-profile button',
+          doc.querySelector('.AppHeader-profile button'),
           2000,
         );
         break;
@@ -690,24 +695,11 @@
         // _auth_require _presentation_style _hide_status_bar _landscape _theme _theme_device
         commonParams.push('game_version', 'visit_device', 'device_type', 'plat_type');
         paramsReg = /^(track|utm|spm_|from_|hyl_|bbs_|mhy_)|_from$/;
-        // login window
         (() => {
-          let time = 200000; let closeBtn; let index = 0;
           if (!/account.(hoyoverse|hoyolab).com$|user.miyoushe.com$/.test(pageHost)) {
-            time = new Date().getTime();
-            // eslint-disable-next-line no-undef
-            GM_setValue('time', time);
-          } // eslint-disable-next-line no-undef
-          if (new Date().getTime() - GM_getValue('time') < 6500) {
-            if (/account.hoyoverse.com$/.test(pageHost)) {
-              closeBtn = ['.el-dialog__headerbtn'];
-            } else if (/account.hoyolab.com$/.test(pageHost)) {
-              closeBtn = ['.el-dialog__headerbtn']; index = 0;
-            } else if (/user.miyoushe.com$/.test(pageHost)) {
-              time = new Date().getTime();
-              closeBtn = ['.card-close'];
-            }
-            autoClick(closeBtn, index, 50, 6000);
+            const css = document.createElement('style');
+            css.innerText += 'body{overflow: auto !important}';
+            document.head.append(css);
           }
         })();
         customClean(commonParams);
@@ -808,7 +800,12 @@
         paramsReg = /^device_|(_version|utm_campaign)$/;
         break;
       case pageHost.endsWith('xiaohongshu.com'):
-        autoClose('.login-container', '.close-button', '.login-btn', 2000);
+        autoClose(
+          '.login-container',
+          '.close-button',
+          doc.querySelector('.login-btn'),
+          2000,
+        );
         break;
       default: break;
     }
@@ -1430,7 +1427,7 @@
         siteParams = amaznParams; paramsReg = amznParamsReg;
         customClean(siteParams, paramsReg);
         break; // REST:  space passport account message member t app manga show link biligame mall pay
-      case /(bilibili|biligame)\.com$/.test(pageHost):
+      case /(bilibili|biligame)\.com$/.test(pageHost): //  && pagePath !== '/mall/upower-pay/'
         siteParams = bilibiliParams; paramsReg = biliParamsReg;
         restoreState(bilibiliParams);
         cleanLinks(bilibiliParams);
@@ -1458,7 +1455,7 @@
         break;
       case /(tiktok|douyin)\.com$/.test(pageHost):
         siteParams = douyinParams; customClean(siteParams);
-        autoClose('#login-pannel', '.dy-account-close', '#-invalid', 5000);
+        // '#login-pannel', '.dy-account-close',
         break;
       default:
         siteParams = commonClean();
@@ -1468,7 +1465,7 @@
     GM_registerMenuCommand(MenuClean, () => { // Menu: Retry clean all links
       restoreState(siteParams);
       cleanLinks(siteParams);
-      console.log(siteParams);
+      console.info(siteParams);
     }, 'C');
     // eslint-disable-next-line no-undef
     GM_registerMenuCommand(MenuAddParams, () => { // Menu: Add a custom param
@@ -1494,6 +1491,11 @@
 
 /*
 # Changelog
+v0.7.7 2024.03.21  
+- Fix some issues on douyin.com|hoyolab.com under certain conditions.
+- Fix an issus that this script may keep preventing users to pay for bili ups.
+- Certain functions optimisations.
+
 v0.7.6.2 2024.03.14  
 - Fix an issue that certain pages of bilibili may not be functional.
 
