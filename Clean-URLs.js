@@ -23,7 +23,7 @@
 // @description:fr     Nettoyer toutes les URLs de suivi, bloquer les événements de suivi sur tous les sites
 // @description:es     Limpiar todas las URLs de seguimiento, bloquear eventos de seguimiento en todos los sitios web
 // @match              *://*/*
-// @exclude            /^https?:\/\/([a-z0-9-.]{0,52})(hdslb.com|csdnimg.cn)\/.*$/
+// @exclude            /^https?:\/\/([a-z0-9-.]{0,52})(xiaohongshu.com|hdslb.com|csdnimg.cn)\/.*$/
 // @run-at             document-start
 // @grant              GM_registerMenuCommand
 // @grant              GM_getValue
