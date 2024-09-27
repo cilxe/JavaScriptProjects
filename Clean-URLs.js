@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.7.7
+// @version            0.7.8
 // @description        净化所有网站上的跟踪链接和事件
 // @description:zh-CN  净化所有网站上的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -93,14 +93,14 @@
   const biliParamsReg = /^(utm_|share_|spm|from_)|(From|_from|source)$/;
 
   const baiduParams = ['rsv_idx', 'hisfilter', 'rsf', 'rsv_pq', 'rsv_t', 'qid', // baidu
-    'rsv_dl', 'oq', 'gpc', 'usm', 'tfflag', 'ie', 'bs', 'rqlang', 'tn',
+    'rsv_dl', 'oq', 'gpc', 'usm', 'tfflag', 'bs', 'rqlang', 'tn',
     'sc_us', 'wfr', 'fenlei', 'platform', 'rqid', 'base_query', 'entry', 'qbl',
     'for', 'from', 'topic_pn', 'rsp', 'rs_src', 'f', 'rsv_page', 'dyTabStr',
     'ct', 'lm', 'site', 'sites', 'fr', 'cl', 'bsst', 'lid', 'rsv_spt',
     'rsv_bp', 'src', 'sfrom', 'refer', 'zp_fr', 'channel', 'p_from', 'n_type',
     'eqid', '_at_', 'sa', 'pd', 'source', 'tag_key', 'uname', 'uid',
-    'fromModule', 'lemmaFrom', 'structureId', 'structureClickId',
-    'structureItemId', 'xzhid',
+    'fromModule', 'lemmaFrom', 'structureId', 'structureClickId', 'ie',
+    'structureItemId', 'xzhid', 'rsv_enter', 'rsv_btype', 'prefixsug',
     'client_type', 'task', 'locate', 'page', 'type', 'is_new_user', 'frwh', // tieba
     'obj_id', 'fid', 'fname', '_t', 'topic_name', 'frs', 'share_from', 'tpl',
     'u', 'tb_mod', 'tb_fr', 'share', 'sfc', 'idfrom', 'client_version', 'st',
@@ -175,7 +175,7 @@
   }
   let cleanLinks; // Clean most of <a> links
   switch (true) {
-    case aliSitesReg.test(pageHost): // Alibaba sites
+    case aliSitesReg.test(pageHost): // Alibaba sites      
       cleanLinks = (siteParams) => {
         const links = doc.getElementsByTagName('a');
         for (let i = 0; i < links.length; i += 1) {
@@ -208,12 +208,12 @@
           if (hostRegex.test(links[i].hostname)) {
             const url = new URL(links[i].href);
             const params = url.searchParams;
-            if (links[i].hostname === 'passport.baidu.com') {
+            if (links[i].hostname === 'passport.baidu.com' && siteParams.includes('u')) {
               siteParams.splice(siteParams.indexOf('u'), 1);
             }
-            if (links[i].innerText === '应用中心') { params.set('kw', links[i].innerText); } //  2. Tieba.baidu.com
+            if (links[i].innerText === '应用中心') { params.set('kw', links[i].innerText); } //  2. Tieba.baidu.com            
             siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            if (links[i].href !== url.href) { links[i].href = url.href; }
+            if (url.href !== links[i].href) { links[i].href = url.href; }
           }
         }
       };
@@ -422,7 +422,7 @@
           mutation.addedNodes.forEach((node) => {
             if (document.querySelector(loginWindow)) {
               if (node.querySelector(closeButton) && !isLogin) {
-                console.info('Close button auto clicked!');
+                console.info('Auto Cloesd!');
                 node.querySelector(closeButton).click();
               }
             }
@@ -434,14 +434,12 @@
         const timeoutID = setTimeout(() => {
           loginButton.addEventListener('click', () => {
             isLogin = true;
-            console.info('YYYYYYYYYYYYYYYYYYYYYYYY');
             observer.disconnect();
           });
           clearTimeout(timeoutID);
         }, DELAY_TIME.normal * 2);
       } else { // Set timeout to disconnect observer whithout login button
         const timeoutID = setTimeout(() => {
-          console.info('TTTTTTTTTTTTTTTT');
           isLogin = true;
           observer.disconnect();
           clearTimeout(timeoutID);
@@ -465,6 +463,7 @@
           'sig',
           'sca_esv',
           'visit_id',
+          'dest_src',
         );
         break;
       case pageHost.endsWith('facebook.com'):
@@ -564,6 +563,9 @@
           'wreply',
           'cobrandid', // signin
           'deeplink',
+          'referrer',
+          'mode',
+          'pos',
         );
         break;
       case /msn.(com|cn)$/.test(pageHost): // No effect on the [Shadow Root] elements.
@@ -649,7 +651,10 @@
           '_ssn',
           'store_name',
           'requested',
+          'itmprp',
+          'itmmeta',
         );
+
         break;
       case pageHost.endsWith('jd.com'):
         commonParams.splice(commonParams.indexOf('utm_campaign'), 1);
@@ -696,11 +701,12 @@
         commonParams.push('game_version', 'visit_device', 'device_type', 'plat_type');
         paramsReg = /^(track|utm|spm_|from_|hyl_|bbs_|mhy_)|_from$/;
         (() => {
-          if (!/account.(hoyoverse|hoyolab).com$|user.miyoushe.com$/.test(pageHost)) {
-            const css = document.createElement('style');
-            css.innerText += 'body{overflow: auto !important}';
+          // /account.(hoyoverse|hoyolab).com$|user.miyoushe.com$/
+          const css = document.createElement('style');
+          css.innerText += 'body{overflow: auto !important}';
+          doc.addEventListener('DOMContentLoaded', () => {
             document.head.append(css);
-          }
+          });
         })();
         customClean(commonParams);
         break;
@@ -804,7 +810,15 @@
           '.login-container',
           '.close-button',
           doc.querySelector('.login-btn'),
-          2000,
+          3700,
+        );
+        break;
+      case pageHost.endsWith('nicovideo.jp'):
+        commonParams.push(
+          'cmnhd_ref',
+          'device',
+          'site',
+          'pos',
         );
         break;
       default: break;
@@ -835,10 +849,22 @@
       do {
         const cardAds = doc.getElementsByTagName('a');
         for (let i = 0; i < cardAds.length; i += 1) {
-          if (cardAds[i].hostname.endsWith('cm.bilibili.com')) { cardAds[i].remove(); } // bilibili ads
+          if (cardAds[i].hostname.endsWith('cm.bilibili.com')) {
+            cardAds[i].parentNode.removeChild(cardAds[i]);
+          } // bilibili ads
         }
         index += 1;
       } while (index < 2); // bilibili login tips
+      const traceDivs = doc.getElementsByClassName('bili-video-card');
+      for (let i = 0; i < traceDivs.length; i += 1) {
+        if (traceDivs[i].getAttribute('data-report').includes('tianma.')) {
+          traceDivs[i].setAttribute('data-report', '0');
+        } // bilibili ads
+      }
+      /**
+       * *******************************************************
+       * *******************************************************
+       */
       const rightEntyItems = doc.getElementsByClassName('right-entry-item')
        || doc.getElementsByClassName('item');
       if (rightEntyItems[0] && rightEntyItems[0].innerText.includes('登录')) {
@@ -1089,9 +1115,6 @@
     if (pageHost.endsWith('news.baidu.com')) {
       baiduParams.push('toc_style_id', 'share_to', 'track_id');
     }
-    if (pageHost.endsWith('tieba.baidu.com')) {
-      baiduParams.splice(baiduParams.indexOf('ie'), 1);
-    }
     restoreState(baiduParams);
     function removeBDAds() {
       const searchAds = document.getElementsByClassName('EC_result');
@@ -1100,6 +1123,9 @@
           searchAds[i].remove();
         }
       }
+    }
+    if (pageHost.endsWith('tieba.baidu.com') && baiduParams.includes('ie')) {
+      baiduParams.splice(baiduParams.indexOf('ie'), 1);
     }
     function cleanBDLinks(siteParams) {
       cleanLinks(baiduParams);
@@ -1353,7 +1379,8 @@
   (() => {
     // Menu language (May not change properly due to browser settings)
     let MenuClean; let MenuAddParams; let InputTitle; let invalidFormat;
-    let MenuRemoveParam; let noSuchParam;
+    let MenuRemoveParam; let noSuchParam; let addedParamsMenu;
+    let noCustomParamPrompt;
     switch (navigator.language) {
       case 'zh-CN' || 'zh-SG':
         MenuClean = '手动清理链接';
@@ -1362,6 +1389,8 @@
         invalidFormat = '无效的参数格式 ';
         MenuRemoveParam = '移除一个手动添加的参数（页面刷新后生效）';
         noSuchParam = '无此参数';
+        addedParamsMenu = '已添加的自定义参数\n\n';
+        noCustomParamPrompt = '暂未添加任何的自定义参数';
         break;
       case 'zh-TW' || 'zh-HK':
         MenuClean = '手動清理鏈接';
@@ -1370,6 +1399,8 @@
         invalidFormat = '無效的參數格式 ';
         MenuRemoveParam = '移除一個手動添加的參數（頁面刷新後生效）';
         noSuchParam = '無此參數';
+        addedParamsMenu = '已添加的自定義參數\n\n';
+        noCustomParamPrompt = '暫未添加任何的自定義參數';
         break;
       default: // English and others
         MenuClean = 'Retry link cleaning';
@@ -1379,6 +1410,8 @@
         invalidFormat = 'Not a valid parameter format ';
         MenuRemoveParam = 'Remove a custom parameter (Effect after refresh)';
         noSuchParam = 'No such parameter.';
+        addedParamsMenu = 'Get all custom added params:\n\n';
+        noCustomParamPrompt = 'No added custom parameters now!';
         break;
     } // -._~:/?#[]@!$&'()*+,;=
     // Add custom params from the Script menu (Submenu of addons)
@@ -1397,6 +1430,16 @@
       } else {
         alert(invalidFormat);
       }
+    }
+    // get all custom added param
+    function getCustomParams() {
+      let list; // eslint-disable-next-line no-undef
+      if (GM_getValue(pageHost)) { // eslint-disable-next-line no-undef
+        list = GM_getValue(pageHost);
+      } else {
+        list = [];
+      } // eslint-disable-next-line no-undef
+      return list;
     }
     // Remove a parameter that has been added from the script menu
     function removeCustomAddedParam(inputParam) {
@@ -1421,7 +1464,7 @@
         siteParams = ytParams; cleanYoutube(siteParams);
         break;
       case pageHost.endsWith('baidu.com'):
-        siteParams = baiduParams; cleanBaidu();
+        siteParams = baiduParams; cleanBaidu(); cleanLinks(baiduParams);
         break;
       case /amazon\.[a-z.]{2,15}$/.test(pageHost):
         siteParams = amaznParams; paramsReg = amznParamsReg;
@@ -1461,20 +1504,38 @@
         siteParams = commonClean();
         break;
     }
-    addCustomParam('', siteParams); // eslint-disable-next-line no-undef
+    addCustomParam('', siteParams);
+    // show all custom added param
+    function showCustomParams() {
+      const list = getCustomParams(siteParams);
+      if (list.length > 0) {
+        alert(addedParamsMenu + list.join(', '));
+      } else {
+        alert(noCustomParamPrompt);
+      }
+    } // eslint-disable-next-line no-undef
     GM_registerMenuCommand(MenuClean, () => { // Menu: Retry clean all links
       restoreState(siteParams);
       cleanLinks(siteParams);
-      console.info(siteParams);
+      console.log(baiduParams);
     }, 'C');
     // eslint-disable-next-line no-undef
     GM_registerMenuCommand(MenuAddParams, () => { // Menu: Add a custom param
       addCustomParam(prompt(InputTitle, ''), siteParams);
     });
     // eslint-disable-next-line no-undef
-    GM_registerMenuCommand(MenuRemoveParam, () => { // Menu: Remove custom added param
-      removeCustomAddedParam(prompt(MenuRemoveParam, ''));
+    GM_registerMenuCommand(MenuRemoveParam, () => { // Menu: Remove a custom param
+      const list = getCustomParams(siteParams);
+      if (list.length > 0) {
+        const inputParam = prompt(`${addedParamsMenu + list.join(', ')}`, '');
+        removeCustomAddedParam(inputParam);
+      } else {
+        alert(noCustomParamPrompt);
+      }
     });
+    // eslint-disable-next-line no-undef
+    GM_registerMenuCommand(addedParamsMenu, showCustomParams);
+
     window.addEventListener('urlchange', () => {
       restoreState(siteParams);
       cleanLinks(siteParams);
@@ -1484,6 +1545,7 @@
       if (e.key === 'X' && e.altKey && e.shiftKey) {
         restoreState(siteParams);
         cleanLinks(siteParams);
+        if (pageHost.includes('bilibili.com')) removeBiliAnnoyances(0);
       }
     });
   })();
@@ -1491,6 +1553,12 @@
 
 /*
 # Changelog
+v0.7.8 2024.09.27  
+- Clear more tracking elements on bilibili|nicovideo|google|microsoft|ebay.
+- Optimised the clean condtions on baidu search result.
+- Various script optimisations.
+- Add some menus to get or delete custom added params. (Thanks to @JerryYang-30)
+
 v0.7.7 2024.03.21  
 - Fix some issues on douyin.com|hoyolab.com under certain conditions.
 - Fix an issus that this script may keep preventing users to pay for bili ups.
