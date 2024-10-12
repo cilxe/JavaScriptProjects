@@ -9,6 +9,8 @@
 // @grant        GM_registerMenuCommand
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @run-at       document-body
+// @license      MIT
 // ==/UserScript==
 
 (() => {
