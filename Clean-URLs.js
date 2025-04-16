@@ -11,7 +11,7 @@
 // @name:es            Limpiar URLs de seguimiento
 // @namespace          https://github.com/cilxe/JavaScriptProjects
 // @author             cilxe
-// @version            0.7.8
+// @version            0.7.9b
 // @description        净化所有网站上的跟踪链接和事件
 // @description:zh-CN  净化所有网站上的跟踪链接和事件
 // @description:zh-TW  凈化網際網路上的所有網站鏈接和事件
@@ -40,6 +40,7 @@
 - Manually clean up the links again. `(v0.5.2~)`
 - Add specific tracking params for the current site (match by domain). `(v0.6.1~)`
 - Remove custom added params for the current site (match by domain). `(v0.6.2~)`
+- Get all custom added params for the current site (host). `(v0.7.8~)`
 
 ## Websites that support common cleaning
 - All websites on the internet.
@@ -183,8 +184,15 @@
             const url = new URL(links[i].href);
             const params = url.searchParams;
             if (params.has('q')) { params.set('q', links[i].innerText); } // //  1. Ali sites (decoding error)
-            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            Array.from(params.keys()).forEach((k) => { if (aliParamsReg.test(k)) { params.delete(k); } });
+            siteParams.forEach((k) => {
+              if (params.has(k)) {
+                params.delete(k);
+              }
+            });
+            Array.from(params.keys()).forEach((k) => {
+              if (aliParamsReg.test(k)
+              ) { params.delete(k); }
+            });
             if (links[i].href !== url.href) { links[i].href = url.href; }
           }
         }
@@ -194,9 +202,17 @@
             const url = new URL(areaLinks[i].href);
             const params = url.searchParams;
             if (params.has('q')) { params.set('q', areaLinks[i].innerText); } // //  1. Ali sites (decoding error)
-            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            Array.from(params.keys()).forEach((k) => { if (aliParamsReg.test(k)) { params.delete(k); } });
-            if (areaLinks[i].href !== url.href) { areaLinks[i].href = url.href; }
+            siteParams.forEach((k) => {
+              if (params.has(k)) {
+                params.delete(k);
+              }
+            });
+            Array.from(params.keys()).forEach((k) => {
+              if (aliParamsReg.test(k)) { params.delete(k); }
+            });
+            if (areaLinks[i].href !== url.href) {
+              areaLinks[i].href = url.href;
+            }
           }
         }
       };
@@ -208,12 +224,19 @@
           if (hostRegex.test(links[i].hostname)) {
             const url = new URL(links[i].href);
             const params = url.searchParams;
-            if (links[i].hostname === 'passport.baidu.com' && siteParams.includes('u')) {
+            if (links[i].hostname === 'passport.baidu.com'
+              && siteParams.includes('u')) {
               siteParams.splice(siteParams.indexOf('u'), 1);
             }
-            if (links[i].innerText === '应用中心') { params.set('kw', links[i].innerText); } //  2. Tieba.baidu.com            
-            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            if (url.href !== links[i].href) { links[i].href = url.href; }
+            if (links[i].innerText === '应用中心') {
+              params.set('kw', links[i].innerText);
+            } //  2. Tieba.baidu.com            
+            siteParams.forEach((k) => {
+              if (params.has(k)) {
+                params.delete(k);
+              }
+            });
+            if (url.href !== links[i].href) links[i].href = url.href;
           }
         }
       };
@@ -229,14 +252,21 @@
             links[i].removeAttribute('data-target-url');
             const url = new URL(links[i].href);
             const params = url.searchParams;
-            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            Array.from(params.keys()).forEach((k) => { if (biliParamsReg.test(k)) { params.delete(k); } });
+            siteParams.forEach((k) => {
+              if (params.has(k)) {
+                params.delete(k);
+              }
+            });
+            Array.from(params.keys()).forEach((k) => {
+              if (biliParamsReg.test(k)) { params.delete(k); }
+            });
             if (links[i].href !== url.href) { links[i].href = url.href; }
           }
           // 3. Bilibili
           // Clean <a> link data-url on video/bangumi of bilibili.com
           const dataLink = links[i].getAttribute('data-url');
-          if (/^(https?:\/\/|\/\/)[a-zA-Z0-9-.]{1,128}\.[a-z]{2,15}/.test(dataLink)) {
+          if (/^(https?:\/\/|\/\/)[a-zA-Z0-9-.]{1,128}\.[a-z]{2,15}/
+            .test(dataLink)) {
             let dlURL;
             if (dataLink.startsWith('//')) {
               dlURL = new URL(`https:${dataLink}`);
@@ -245,12 +275,26 @@
             }
             const dlParams = dlURL.searchParams;
             if (dlURL.hostname.endsWith('bilibili.com')) {
-              Array.from(dlParams.keys()).forEach((k) => { if (biliParamsReg.test(k)) { dlParams.delete(k); } });
-              siteParams.forEach((k) => { if (dlParams.has(k)) { dlParams.delete(k); } });
+              Array.from(dlParams.keys()).forEach((k) => {
+                if (
+                  biliParamsReg.test(k)) { dlParams.delete(k); }
+              });
+              siteParams.forEach((k) => {
+                if (dlParams.has(k)) {
+                  dlParams.delete(k);
+                }
+              });
             } else {
               const dlParamsReg = paramsReg;
-              Array.from(dlParams.keys()).forEach((k) => { if (dlParamsReg.test(k)) { dlParams.delete(k); } });
-              commonParams.forEach((k) => { if (dlParams.has(k)) { dlParams.delete(k); } });
+              Array.from(dlParams.keys()).forEach((k) => {
+                if (
+                  dlParamsReg.test(k)) { dlParams.delete(k); }
+              });
+              commonParams.forEach((k) => {
+                if (dlParams.has(k)) {
+                  dlParams.delete(k);
+                }
+              });
             }
             links[i].href = dlURL.href;
             links[i].classList.remove('jump-link');
@@ -269,13 +313,21 @@
           if (hostRegex.test(links[i].hostname)) {
             const url = new URL(links[i].href);
             const params = url.searchParams;
-            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            Array.from(params.keys()).forEach((k) => { if (amznParamsReg.test(k)) { params.delete(k); } });
+            siteParams.forEach((k) => {
+              if (params.has(k)) {
+                params.delete(k);
+              }
+            });
+            Array.from(params.keys()).forEach((k) => {
+              if (
+                amznParamsReg.test(k)) { params.delete(k); }
+            });
             if (links[i].href !== url.href) { links[i].href = url.href; }
           }
           if (/amazon\.[a-z.]{2,15}$/.test(links[i].hostname)) { // 4. Amazon
             if (links[i].pathname.includes('/ref')) {
-              links[i].pathname = links[i].pathname.substring(links[i].pathname.indexOf('/ref'), 1);
+              links[i].pathname = links[i].pathname
+                .substring(links[i].pathname.indexOf('/ref'), 1);
             }
           }
         }
@@ -283,18 +335,27 @@
       break;
     case /google\.[a-z.]{2,15}$|about.google$/.test(pageHost):
       cleanLinks = (siteParams) => {
-        const links = doc.getElementsByTagName('a'); const iParamsReg = paramsReg;
+        const links = doc.getElementsByTagName('a');
+        const iParamsReg = paramsReg;
         for (let i = 0; i < links.length; i += 1) {
           if (hostRegex.test(links[i].hostname)) {
             const url = new URL(links[i].href);
             const params = url.searchParams;
-            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            Array.from(params.keys()).forEach((k) => { if (iParamsReg.test(k)) { params.delete(k); } });
+            siteParams.forEach((k) => {
+              if (params.has(k)) {
+                params.delete(k);
+              }
+            });
+            Array.from(params.keys()).forEach((k) => {
+              if (iParamsReg.test(k)) { params.delete(k); }
+            });
             if (links[i].href !== url.href) { links[i].href = url.href; }
             // Clean params at the hash of urls   // 5. Google
             if (/utm_/.test(url.hash)) {
               const ua = url.hash.substring(1).split('&');
-              ua.forEach((key, index) => { if (/^utm_/.test(key)) ua.splice(index, 8); });
+              ua.forEach((key, index) => {
+                if (/^utm_/.test(key)) { ua.splice(index, 8); }
+              });
               links[i].hash = `#${ua.toString().replaceAll(',', '&')}`;
             }
           }
@@ -303,13 +364,20 @@
       break;
     default:
       cleanLinks = (siteParams) => {
-        const links = doc.getElementsByTagName('a'); const iParamsReg = paramsReg;
+        const links = doc.getElementsByTagName('a');
+        const iParamsReg = paramsReg;
         for (let i = 0; i < links.length; i += 1) {
           if (hostRegex.test(links[i].hostname)) {
             const url = new URL(links[i].href);
             const params = url.searchParams;
-            siteParams.forEach((k) => { if (params.has(k)) { params.delete(k); } });
-            Array.from(params.keys()).forEach((k) => { if (iParamsReg.test(k)) { params.delete(k); } });
+            siteParams.forEach((k) => {
+              if (params.has(k)) {
+                params.delete(k);
+              }
+            });
+            Array.from(params.keys()).forEach((k) => {
+              if (iParamsReg.test(k)) { params.delete(k); }
+            });
             if (links[i].href !== url.href) { links[i].href = url.href; }
           }
         }
@@ -325,7 +393,10 @@
   function blockClickEvents(siteParams, delayTime) {
     const tid = setTimeout(() => {
       const handleLinkClick = () => { cleanLinks(siteParams); };
-      const handleLinkCM = (e) => { e.stopImmediatePropagation(); cleanLinks(siteParams); };
+      const handleLinkCM = (e) => {
+        e.stopImmediatePropagation();
+        cleanLinks(siteParams);
+      };
       const handleLinkClickN = () => { deferredCleanLinks(siteParams, 0); };
       const divs = doc.getElementsByTagName('div');
       for (let i = 0; i < divs.length; i += 1) {
@@ -350,7 +421,8 @@
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
         if (hostRegex.test(links[i].hostname)) {
-          // links[i].removeEventListener('mousedown', handleLinkCM); // mail.qq.com/web.telegram.org
+          // mail.qq.com/web.telegram.org
+          // links[i].removeEventListener('mousedown', handleLinkCM); 
           // links[i].addEventListener('mousedown', handleLinkCM);
           links[i].removeEventListener('keyup', handleLinkCM);
           links[i].addEventListener('keyup', handleLinkCM);
@@ -401,19 +473,19 @@
     });
   }
   // Auto close (common)
-  function autoClick(attrs, attrIndex, intervals, duration) {
-    const intervalID = setInterval(() => {
-      attrs.forEach((attr) => {
-        const closeBtn = document.querySelectorAll(attr)[attrIndex];
-        if (closeBtn) { closeBtn.click(); }
-      });
-    }, intervals);
-    document.addEventListener('DOMContentLoaded', () => {
-      const timeoutId = setTimeout(() => {
-        clearInterval(intervalID); clearTimeout(timeoutId);
-      }, duration);
-    });
-  }
+  // function autoClick(attrs, attrIndex, intervals, duration) {
+  //   const intervalID = setInterval(() => {
+  //     attrs.forEach((attr) => {
+  //       const closeBtn = document.querySelectorAll(attr)[attrIndex];
+  //       if (closeBtn) { closeBtn.click(); }
+  //     });
+  //   }, intervals);
+  //   document.addEventListener('DOMContentLoaded', () => {
+  //     const timeoutId = setTimeout(() => {
+  //       clearInterval(intervalID); clearTimeout(timeoutId);
+  //     }, duration);
+  //   });
+  // }
   // Auto close (mutation observer)
   function autoClose(loginWindow, closeButton, loginButton, timeout) {
     doc.addEventListener('DOMContentLoaded', () => {
@@ -538,7 +610,8 @@
       case pageHost.endsWith('vk.com'):
         commonParams.push('scheme', 'initial_stats_info');
         break;
-      case /(microsoft|bing|xbox|skype|office|microsoft365)\.com$/.test(pageHost):
+      case /(microsoft|bing|xbox|skype|office|microsoft365)\.com$/
+        .test(pageHost):
         commonParams.push(
           'ocid',
           'OCID',
@@ -696,10 +769,16 @@
         );
         paramsReg = /^(track|from_|utm_|_oak_|_wv|_x_)/;
         break;
-      case /(hoyolab|hoyoverse|mihoyo|miyoushe|mihoyogift)\.com$/.test(pageHost):
+      case /(hoyolab|hoyoverse|mihoyo|miyoushe|mihoyogift)\.com$/
+        .test(pageHost):
         // _auth_require _presentation_style _hide_status_bar _landscape _theme _theme_device
-        commonParams.push('game_version', 'visit_device', 'device_type', 'plat_type');
-        paramsReg = /^(track|utm|spm_|from_|hyl_|bbs_|mhy_)|_from$/;
+        commonParams.push(
+          'game_version',
+          'visit_device',
+          'device_type',
+          'plat_type',
+        );
+        paramsReg = /^(track|utm|spm_|from_|hyl_|mhy_)|_from$/;
         (() => {
           // /account.(hoyoverse|hoyolab).com$|user.miyoushe.com$/
           const css = document.createElement('style');
@@ -730,7 +809,8 @@
         (() => {
           const intervalID = setInterval(() => {
             if (doc.querySelector('.menu.transition.visible')) {
-              doc.querySelector('.menu.transition.visible').style = 'display: none !important;';
+              doc.querySelector('.menu.transition.visible')
+                .style = 'display: none !important;';
             }
           }, 50);
           document.addEventListener('DOMContentLoaded', () => {
@@ -751,6 +831,9 @@
         break;
       case pageHost.endsWith('cctv.com'):
         commonParams.push('toc_style_id');
+        break;
+      case pageHost.endsWith('smzdm.com'):
+        commonParams.push('zdm_ss', 'send_by', 'from', 'invite_code');
         break;
       case pageHost.endsWith('fiverr.com'):
         commonParams.push(
@@ -812,6 +895,10 @@
           doc.querySelector('.login-btn'),
           3700,
         );
+        commonParams.push(
+          'xsec_token',
+          'xsec_source',
+        );
         break;
       case pageHost.endsWith('nicovideo.jp'):
         commonParams.push(
@@ -830,7 +917,10 @@
     });
     window.onscroll = () => {
       const scrolls = doc.documentElement.scrollTop;
-      if (scrolls - topScroll > 120) { cleanLinks(params); topScroll = scrolls; }
+      if (scrolls - topScroll > 120) {
+        cleanLinks(params);
+        topScroll = scrolls;
+      }
     };
     return params;
   }
@@ -868,8 +958,13 @@
       const rightEntyItems = doc.getElementsByClassName('right-entry-item')
        || doc.getElementsByClassName('item');
       if (rightEntyItems[0] && rightEntyItems[0].innerText.includes('登录')) {
-        hideElement(['.lt-row', '.bili-login-card', '.bili-mini-mask',
-          '.is-bottom', '.v-popover-content', '.unlogin-popover'], 30, 6000, false);
+        hideElement(
+          ['.lt-row', '.bili-login-card', '.bili-mini-mask',
+            '.is-bottom', '.v-popover-content', '.unlogin-popover'],
+          30,
+          6000,
+          false,
+        );
         const loginTab = rightEntyItems[0].getElementsByTagName('span')[0];
         if (/登录/.test(rightEntyItems[0].innerText) && loginTab) {
           loginTab.outerHTML = '<a href="https://passport.bilibili.com/login"'
@@ -885,7 +980,8 @@
     function blockBLinkEvents() {
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
-        if (links[i].getAttribute('data-video-time') === null && hostRegex.test(links[i].hostname)) {
+        if (links[i].getAttribute('data-video-time') === null
+        && hostRegex.test(links[i].hostname)) {
           const isLinkJump = links[i].classList.contains('jump-link');
           const isLinkJumpVideo = links[i].classList.contains('video-time')
           || links[i].classList.contains('video');
@@ -908,10 +1004,13 @@
 
     function deferredBlockBLinkEvents(delayTime) {
       const tid = setTimeout(() => {
-        cleanLinks(bilibiliParams); removeBiliAnnoyances(0); blockBLinkEvents(); clearTimeout(tid);
+        cleanLinks(bilibiliParams); removeBiliAnnoyances(0);
+        blockBLinkEvents(); clearTimeout(tid);
       }, delayTime);
     }
-    const handleClickFast = () => { deferredBlockBLinkEvents(DELAY_TIME.fast); };
+    const handleClickFast = () => {
+      deferredBlockBLinkEvents(DELAY_TIME.fast);
+    };
     const buttons = doc.getElementsByTagName('button');
     for (let i = 0; i < buttons.length; i += 1) {
       if (buttons[i].className) {
@@ -921,7 +1020,8 @@
     }
     const lines = doc.getElementsByTagName('li');
     for (let i = 0; i < lines.length; i += 1) {
-      if (lines[i].className && !lines[i].classList.contains('context-sub-menu-item')) {
+      if (lines[i].className && !lines[i].classList
+        .contains('context-sub-menu-item')) {
         lines[i].removeEventListener('click', handleClickFast);
         lines[i].addEventListener('click', handleClickFast);
       }
@@ -929,13 +1029,20 @@
     // iframe - live
     if (pageURL.startsWith('https://live.bilibili.com/blackboard/dropdown')) {
       document.addEventListener('DOMContentLoaded', () => {
-        document.addEventListener('click', (e) => { e.stopPropagation(); }, true);
+        document.addEventListener(
+          'click',
+          (e) => { e.stopPropagation(); },
+          true,
+        );
       });
     }
   }
   function deferredBlockBClickEvents(delayTime) {
     restoreState(bilibiliParams);
-    const tid = setTimeout(() => { blockBClickEvents(); clearTimeout(tid); }, delayTime);
+    const tid = setTimeout(
+      () => { blockBClickEvents(); clearTimeout(tid); },
+      delayTime,
+    );
   }
   // Loop execution when the mouse moves
   function bilibiliListenMoving() {
@@ -975,7 +1082,9 @@
     function blockSearchEvents() {
       // input suggested items
       const suggestItems = doc.getElementsByClassName('suggest-item');
-      const handleBSearchClick = () => { deferredBlockBClickEvents(DELAY_TIME.fast); };
+      const handleBSearchClick = () => {
+        deferredBlockBClickEvents(DELAY_TIME.fast);
+      };
       if (suggestItems) {
         for (let i = 0; i < suggestItems.length; i += 1) {
           suggestItems[i].addEventListener('click', handleBSearchClick, true);
@@ -997,15 +1106,26 @@
       }
     }
     const handleBSearchClickB = () => {
-      const tid = setTimeout(() => { blockSearchEvents(); clearTimeout(tid); }, DELAY_TIME.fast);
+      const tid = setTimeout(
+        () => { blockSearchEvents(); clearTimeout(tid); },
+        DELAY_TIME.fast,
+      );
     };
     // search input area
     if (doc.querySelector('.search-input-el')) {
-      doc.querySelector('.search-input-el').addEventListener('click', handleBSearchClickB, true);
+      doc.querySelector('.search-input-el').addEventListener(
+        'click',
+        handleBSearchClickB,
+        true,
+      );
     }
     // clear icon
     if (doc.querySelector('.clear-icon')) {
-      doc.querySelector('.clear-icon').addEventListener('click', handleBSearchClickB, true);
+      doc.querySelector('.clear-icon').addEventListener(
+        'click',
+        handleBSearchClickB,
+        true,
+      );
     }
   }
   // search.bilibili.com/*
@@ -1015,10 +1135,11 @@
     const pageButtons = doc.getElementsByClassName('vui_pagenation--btn'); // div
     if (pageButtons) {
       for (let i = 0; i < pageButtons.length; i += 1) {
-        pageButtons[i].addEventListener('click', () => { deferredBlockBClickEvents(DELAY_TIME.fast); }, true);
+        pageButtons[i].addEventListener('click', () => {
+          blockBClickEvents(); // deferredBlockBClickEvents(DELAY_TIME.fast);
+        }, true);
       }
     }
-    deferredBlockBClickEvents(DELAY_TIME.normal); deferredCleanLinks(bilibiliParams, DELAY_TIME.slow - 600);
   }
   // www.bilibili.com/video/*
   function cleanBVideoURL() {
@@ -1033,29 +1154,46 @@
       // Clean copying of video URLs (copy share)
       let toolBar; let sharInner; let sharOuter;
       if (/^\/video\//.test(pagePath)) {
-        toolBar = '#arc_toolbar_report'; sharOuter = 'share-btn-outer'; sharInner = 'share-btn-inner';
+        toolBar = '#arc_toolbar_report';
+        sharOuter = 'share-btn-outer';
+        sharInner = 'share-btn-inner';
       } else if (/^\/bangumi\//.test(pagePath)) {
-        toolBar = '.toolbar'; sharOuter = 'share-container-id'; sharInner = 'link_copy';
+        toolBar = '.toolbar';
+        sharOuter = 'share-container-id';
+        sharInner = 'link_copy';
       }
       let vid; const url = new URL(window.location.href);
-      const handleWriteText = () => { navigator.clipboard.writeText(pageURL); };
+      const handleWriteText = () => {
+        navigator.clipboard.writeText(pageURL);
+      };
       if (doc.querySelector(toolBar)) {
         doc.querySelector(toolBar).addEventListener('pointermove', () => {
           if (doc.getElementById(sharOuter)) {
-            doc.getElementById(sharOuter).removeEventListener('click', handleWriteText);
-            doc.getElementById(sharOuter).addEventListener('click', handleWriteText);
-            doc.getElementById(sharInner).addEventListener('click', (event) => {
-              event.stopImmediatePropagation();
-              if (doc.getElementById(sharInner).innerText.includes('精准')) {
-                if (pagePath.indexOf('/video/') === 0) {
-                  vid = doc.querySelector('video') || doc.querySelector('bwp-video'); // Chrome Firefox Edge ..
-                } else if (pagePath.indexOf('/bangumi/') === 0) {
-                  vid = doc.getElementsByTagName('video')[1] || doc.querySelector('bwp-video');
-                }
-                url.searchParams.set('t', vid.currentTime.toFixed(2));
-                navigator.clipboard.writeText(url.toString());
-              } else { navigator.clipboard.writeText(pageURL); }
-            });
+            doc.getElementById(sharOuter).removeEventListener(
+              'click',
+              handleWriteText,
+            );
+            doc.getElementById(sharOuter).addEventListener(
+              'click',
+              handleWriteText,
+            );
+            doc.getElementById(sharInner).addEventListener(
+              'click',
+              (event) => {
+                event.stopImmediatePropagation();
+                if (doc.getElementById(sharInner).innerText.includes('精准')) {
+                  if (pagePath.indexOf('/video/') === 0) {
+                    vid = doc.querySelector('video')
+                    || doc.querySelector('bwp-video'); // Chrome Firefox Edge ..
+                  } else if (pagePath.indexOf('/bangumi/') === 0) {
+                    vid = doc.getElementsByTagName('video')[1]
+                    || doc.querySelector('bwp-video');
+                  }
+                  url.searchParams.set('t', vid.currentTime.toFixed(2));
+                  navigator.clipboard.writeText(url.toString());
+                } else { navigator.clipboard.writeText(pageURL); }
+              },
+            );
           }
         });
       }
@@ -1132,7 +1270,8 @@
       const links = doc.getElementsByTagName('a');
       for (let i = 0; i < links.length; i += 1) {
         if (hostRegex.test(links[i].hostname)) {
-          if (links[i].hostname.endsWith('zhidao.baidu.com') && links[i].pathname === '/q') {
+          if (links[i].hostname.endsWith('zhidao.baidu.com')
+          && links[i].pathname === '/q') {
             links[i].pathname = '/search';
           }
           links[i].href = links[i].href.replace('from=', '');
@@ -1177,7 +1316,8 @@
   }
   // ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦ CSDN ✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦✦
   function cleanCSDN() {
-    restoreState(csdnParams); deferredCleanLinks(csdnParams, DELAY_TIME.normal);
+    restoreState(csdnParams);
+    deferredCleanLinks(csdnParams, DELAY_TIME.normal);
     // CSDN.net tracking events
     function blockCSDNEvents() {
       const links = doc.getElementsByTagName('a');
@@ -1307,7 +1447,9 @@
   function cleanYoutube() {
     function blockytLinksRedirection(timeout) {
       setTimeout(() => {
-        const outerLinks = document.getElementsByClassName('yt-core-attributed-string--link-inherit-color');
+        const outerLinks = document.getElementsByClassName(
+          'yt-core-attributed-string--link-inherit-color',
+        );
         for (let i = 0; i < outerLinks.length; i += 1) {
           outerLinks[i].addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1384,7 +1526,7 @@
     switch (navigator.language) {
       case 'zh-CN' || 'zh-SG':
         MenuClean = '手动清理链接';
-        MenuAddParams = '添加自定义参数（半角英文模式）';
+        MenuAddParams = '添加一个自定义参数（半角英文模式）';
         InputTitle = '请输入单个指定的参数（仅支持字母，数字，下划线，短破折号(-)与任意类型的括号）';
         invalidFormat = '无效的参数格式 ';
         MenuRemoveParam = '移除一个手动添加的参数（页面刷新后生效）';
@@ -1394,7 +1536,7 @@
         break;
       case 'zh-TW' || 'zh-HK':
         MenuClean = '手動清理鏈接';
-        MenuAddParams = '添加自定義参数（半角英文模式）';
+        MenuAddParams = '添加一個自定義参数（半角英文模式）';
         InputTitle = '請輸入單個指定的參數（僅支持字母，數字，下劃線，短破折號(-)與任意類型的括號）';
         invalidFormat = '無效的參數格式 ';
         MenuRemoveParam = '移除一個手動添加的參數（頁面刷新後生效）';
@@ -1403,15 +1545,17 @@
         noCustomParamPrompt = '暫未添加任何的自定義參數';
         break;
       default: // English and others
-        MenuClean = 'Retry link cleaning';
+        MenuClean = 'Manually clean links.';
         MenuAddParams = 'Add a custom parameter (English Mode)';
         InputTitle = 'Please enter a single parameter below \n(only support '
-          + 'letters, numbers, underscore, en-dash and all types of brackets):';
-        invalidFormat = 'Not a valid parameter format ';
-        MenuRemoveParam = 'Remove a custom parameter (Effect after refresh)';
+          + 'letters, numbers, underscore, hyphens (-) '
+          + 'and any types of brackets):';
+        invalidFormat = 'Invalid parameter format.';
+        MenuRemoveParam = 'Remove a manually added '
+        + 'parameter (effective after page refresh).';
         noSuchParam = 'No such parameter.';
-        addedParamsMenu = 'Get all custom added params:\n\n';
-        noCustomParamPrompt = 'No added custom parameters now!';
+        addedParamsMenu = 'All custom parameters that have been added.:\n\n';
+        noCustomParamPrompt = 'No custom parameters have been added yet!';
         break;
     } // -._~:/?#[]@!$&'()*+,;=
     // Add custom params from the Script menu (Submenu of addons)
@@ -1451,7 +1595,8 @@
           list = [];
         }
         if (list.includes(inputParam)) {
-          list = list.filter((item) => item !== inputParam); // eslint-disable-next-line no-undef
+          list = list.filter((item) => item !== inputParam);
+          // eslint-disable-next-line no-undef
           GM_setValue(pageHost, list);
         } else {
           alert(noSuchParam);
@@ -1553,6 +1698,11 @@
 
 /*
 # Changelog
+v0.7.9 2025.
+- Clear more tracking parameters on xiaohongshu.com|smzdm.com.
+- Optimised the translation of menu title(EN).
+- Other improvements.
+
 v0.7.8 2024.09.27  
 - Clear more tracking elements on bilibili|nicovideo|google|microsoft|ebay.
 - Optimised the clean condtions on baidu search result.
