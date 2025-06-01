@@ -79,278 +79,277 @@
 */
 
 (() => {
-    const DELAY_TIME = { fast: 600, normal: 1000, slow: 2500 };
-    let topScroll = 0;
-    const INDEX_TARGET = ['target'];
-    const INDEX_ADJUST = ['redirect', 'fallback'];
-    const INDEX_URL = ['url'];
-    const INDEX_TO = ['to'];
-    const INDEX_Q = ['q'];
-    const INDEX_GOTO = ['goto'];
-    const regStr = '(youtube|steamcommunity|zhihu|jianshu|juejin|leetcode|'
+  const DELAY_TIME = { fast: 600, normal: 1000, slow: 2500 };
+  let topScroll = 0;
+  const INDEX_TARGET = ['target'];
+  const INDEX_ADJUST = ['redirect', 'fallback'];
+  const INDEX_URL = ['url'];
+  const INDEX_TO = ['to'];
+  const INDEX_Q = ['q'];
+  const INDEX_GOTO = ['goto'];
+  const regStr = '(youtube|steamcommunity|zhihu|jianshu|juejin|leetcode|'
         + 'oschina|gitee|sspai|gcores|alipay|epicgames|linkedin|vk|adjust|'
         + 'game.bilibili|douban|sourceforge).(com|net|cn|hk)$';
-    let hostRegex = new RegExp(regStr);
-    const pageHost = window.location.hostname;
-    const pageParams = window.location.search;
-    const doc = document;
+  let hostRegex = new RegExp(regStr);
+  const pageHost = window.location.hostname;
+  const pageParams = window.location.search;
+  const doc = document;
 
-    // SourceForge link cleaning function
-    function cleanSourceForgeLink(originalLink) {
-        try {
-            const url = new URL(originalLink);
-            const oaparams = new URLSearchParams(url.search).get('oaparams');
-            if (!oaparams) return originalLink;
-            
-            const oaComponents = oaparams.split('__');
-            const oadestComponent = oaComponents.find(comp => comp.startsWith('oadest='));
-            if (!oadestComponent) return originalLink;
-            
-            const destUrlEncoded = oadestComponent.split('oadest=')[1];
-            const destUrl = decodeURIComponent(destUrlEncoded);
-            const finalUrl = new URL(destUrl);
-            
-            return finalUrl.origin + finalUrl.pathname.replace(/\/$/, '');
-        } catch (e) {
-            console.error('Error cleaning SourceForge URL:', e);
-            return originalLink;
-        }
+  // SourceForge link cleaning function
+  function cleanSourceForgeLink(originalLink) {
+    try {
+      const url = new URL(originalLink);
+      const oaparams = new URLSearchParams(url.search).get('oaparams');
+      if (!oaparams) return originalLink;
+
+      const oaComponents = oaparams.split('__');
+      const oadestComponent = oaComponents.find((comp) => comp.startsWith('oadest='));
+      if (!oadestComponent) return originalLink;
+
+      const destUrlEncoded = oadestComponent.split('oadest=')[1];
+      const destUrl = decodeURIComponent(destUrlEncoded);
+      const finalUrl = new URL(destUrl);
+
+      return finalUrl.origin + finalUrl.pathname.replace(/\/$/, '');
+    } catch (e) {
+      console.error('Error cleaning SourceForge URL:', e);
+      return originalLink;
+    }
+  }
+
+  let linkDirect;
+  switch (true) {
+    case /(pixiv.net|deviantart.com)$/.test(pageHost):
+      hostRegex = /(pixiv.net|deviantart.com)$/;
+      linkDirect = (directURLParams, delayTime) => {
+        const timeoutID = setTimeout(() => {
+          const links = doc.getElementsByTagName('a');
+          for (let i = 0; i < links.length; i += 1) {
+            if (hostRegex.test(links[i].hostname)) {
+              const params = new URLSearchParams(links[i].search);
+              directURLParams.forEach((k) => {
+                if (params.has(k) && links[i].href !== decodeURIComponent(params.get(k))) {
+                  links[i].href = decodeURIComponent(params.get(k));
+                }
+              });
+              if (/jump.php|outgoing/.test(links[i].pathname)) {
+                if (links[i].href !== decodeURIComponent(links[i].search.substring(1, links[i].href.length))) {
+                  links[i].href = decodeURIComponent(links[i].search.substring(1, links[i].href.length));
+                }
+              }
+            }
+          }
+          clearTimeout(timeoutID);
+        }, delayTime);
+      };
+      break;
+    case /xda-developers.com$/.test(pageHost):
+      hostRegex = /(xda-developers.com|shop-links.co|anrdoezrs.net|a9yw.net|pxf.io|viglink.com|awin1.com)$/;
+      linkDirect = (directURLParams, delayTime) => {
+        const timeoutID = setTimeout(() => {
+          const links = doc.getElementsByTagName('a');
+          for (let i = 0; i < links.length; i += 1) {
+            if (hostRegex.test(links[i].hostname)) {
+              const params = new URLSearchParams(links[i].search);
+              directURLParams.forEach((k) => {
+                if (params.has(k) && links[i].href !== decodeURIComponent(params.get(k))) {
+                  links[i].href = decodeURIComponent(params.get(k));
+                }
+              });
+              let realLink = links[i].href;
+              if (/https?/.test(links[i].search)) {
+                realLink = links[i].search.substring(1, links[i].href.length);
+              } else if (/https?/.test(links[i].pathname)) {
+                realLink = links[i].pathname.substring(links[i].pathname.lastIndexOf('http'), links[i].href.length);
+              }
+              if (links[i].href !== decodeURIComponent(realLink)) {
+                links[i].href = decodeURIComponent(realLink);
+              }
+            }
+          }
+          clearTimeout(timeoutID);
+        }, delayTime);
+      };
+      break;
+    case /^(tieba|ala).baidu.com$/.test(pageHost):
+      linkDirect = (directURLParams, delayTime) => {
+        const timeoutID = setTimeout(() => {
+          const links = doc.getElementsByClassName('j-no-opener-url');
+          for (let i = 0; i < links.length; i += 1) {
+            if (/^jump2?.bdimg.com$/.test(links[i].hostname) && links[i].innerText.startsWith('http')) {
+              links[i].href = links[i].innerText;
+            }
+          }
+          clearTimeout(timeoutID);
+        }, delayTime);
+      };
+      break;
+    case /sourceforge.net$/.test(pageHost):
+      linkDirect = (directURLParams, delayTime) => {
+        const timeoutID = setTimeout(() => {
+          const links = doc.getElementsByTagName('a');
+          for (let i = 0; i < links.length; i += 1) {
+            if (/sourceforge.net$/.test(links[i].hostname)) {
+              const cleanedLink = cleanSourceForgeLink(links[i].href);
+              if (links[i].href !== cleanedLink) {
+                links[i].href = cleanedLink;
+              }
+            }
+          }
+          clearTimeout(timeoutID);
+        }, delayTime);
+      };
+      break;
+    default:
+      linkDirect = (directURLParams, delayTime) => {
+        const timeoutID = setTimeout(() => {
+          const links = doc.getElementsByTagName('a');
+          for (let i = 0; i < links.length; i += 1) {
+            if (hostRegex.test(links[i].hostname)) {
+              const params = new URLSearchParams(links[i].search);
+              directURLParams.forEach((k) => {
+                if (params.has(k) && links[i].href !== params.get(k)) {
+                  links[i].href = params.get(k);
+                }
+              });
+            }
+          }
+          clearTimeout(timeoutID);
+        }, delayTime);
+      };
+      break;
+  }
+
+  // Youtube additional steps
+  function youtubeDirect() {
+    function run(delayTime) {
+      linkDirect(INDEX_Q, DELAY_TIME.fast);
+      linkDirect(INDEX_Q, DELAY_TIME.normal * 2);
+      const timeoutID = setTimeout(() => {
+        linkDirect(INDEX_Q, 0);
+        document.addEventListener('click', () => {
+          linkDirect(INDEX_Q, DELAY_TIME.fast);
+        });
+        clearTimeout(timeoutID);
+      }, delayTime);
+    }
+    run(2000);
+    doc.addEventListener('DOMContentLoaded', () => {
+      run(1000);
+    });
+    doc.onvisibilitychange = () => {
+      run(1500);
+    };
+  }
+
+  // Main function
+  (() => {
+    let indexParam;
+    let MenuTitle;
+    switch (navigator.language) {
+      case 'zh-CN' || 'zh-SG':
+        MenuTitle = '手动重新替换';
+        break;
+      case 'zh-TW' || 'zh-HK':
+        MenuTitle = '手動再次替換';
+        break;
+      default:
+        MenuTitle = 'Retry link replacing.';
+        break;
     }
 
-    let linkDirect;
+    const adjust = /(hoyolab|mozilla|firefox)\.(com|org)$/.test(pageHost);
+    const usingTarget = /(juejin|leetcode|gitee|sspai|gcores|zhihu)\.(com|cn)$/.test(pageHost);
+    const isSourceForge = /sourceforge.net$/.test(pageHost);
+    const urlParam = new URLSearchParams(pageParams);
     switch (true) {
-        case /(pixiv.net|deviantart.com)$/.test(pageHost):
-            hostRegex = /(pixiv.net|deviantart.com)$/;
-            linkDirect = (directURLParams, delayTime) => {
-                const timeoutID = setTimeout(() => {
-                    const links = doc.getElementsByTagName('a');
-                    for (let i = 0; i < links.length; i++) {
-                        if (hostRegex.test(links[i].hostname)) {
-                            const params = new URLSearchParams(links[i].search);
-                            directURLParams.forEach((k) => {
-                                if (params.has(k) && links[i].href !== decodeURIComponent(params.get(k))) {
-                                    links[i].href = decodeURIComponent(params.get(k));
-                                }
-                            });
-                            if (/jump.php|outgoing/.test(links[i].pathname)) {
-                                if (links[i].href !== decodeURIComponent(links[i].search.substring(1, links[i].href.length))) {
-                                    links[i].href = decodeURIComponent(links[i].search.substring(1, links[i].href.length));
-                                }
-                            }
-                        }
-                    }
-                    clearTimeout(timeoutID);
-                }, delayTime);
-            };
-            break;
-        case /xda-developers.com$/.test(pageHost):
-            hostRegex = /(xda-developers.com|shop-links.co|anrdoezrs.net|a9yw.net|pxf.io|viglink.com|awin1.com)$/;
-            linkDirect = (directURLParams, delayTime) => {
-                const timeoutID = setTimeout(() => {
-                    const links = doc.getElementsByTagName('a');
-                    for (let i = 0; i < links.length; i++) {
-                        if (hostRegex.test(links[i].hostname)) {
-                            const params = new URLSearchParams(links[i].search);
-                            directURLParams.forEach((k) => {
-                                if (params.has(k) && links[i].href !== decodeURIComponent(params.get(k))) {
-                                    links[i].href = decodeURIComponent(params.get(k));
-                                }
-                            });
-                            let realLink = links[i].href;
-                            if (/https?/.test(links[i].search)) {
-                                realLink = links[i].search.substring(1, links[i].href.length);
-                            } else if (/https?/.test(links[i].pathname)) {
-                                realLink = links[i].pathname.substring(links[i].pathname.lastIndexOf('http'), links[i].href.length);
-                            }
-                            if (links[i].href !== decodeURIComponent(realLink)) {
-                                links[i].href = decodeURIComponent(realLink);
-                            }
-                        }
-                    }
-                    clearTimeout(timeoutID);
-                }, delayTime);
-            };
-            break;
-        case /^(tieba|ala).baidu.com$/.test(pageHost):
-            linkDirect = (directURLParams, delayTime) => {
-                const timeoutID = setTimeout(() => {
-                    const links = doc.getElementsByClassName('j-no-opener-url');
-                    for (let i = 0; i < links.length; i++) {
-                        if (/^jump2?.bdimg.com$/.test(links[i].hostname) && links[i].innerText.startsWith('http')) {
-                            links[i].href = links[i].innerText;
-                        }
-                    }
-                    clearTimeout(timeoutID);
-                }, delayTime);
-            };
-            break;
-        case /sourceforge.net$/.test(pageHost):
-            linkDirect = (directURLParams, delayTime) => {
-                const timeoutID = setTimeout(() => {
-                    const links = doc.getElementsByTagName('a');
-                    for (let i = 0; i < links.length; i++) {
-                        if (/sourceforge.net$/.test(links[i].hostname)) {
-                            const cleanedLink = cleanSourceForgeLink(links[i].href);
-                            if (links[i].href !== cleanedLink) {
-                                links[i].href = cleanedLink;
-                            }
-                        }
-                    }
-                    clearTimeout(timeoutID);
-                }, delayTime);
-            };
-            break;
-        default:
-            linkDirect = (directURLParams, delayTime) => {
-                const timeoutID = setTimeout(() => {
-                    const links = doc.getElementsByTagName('a');
-                    for (let i = 0; i < links.length; i++) {
-                        if (hostRegex.test(links[i].hostname)) {
-                            const params = new URLSearchParams(links[i].search);
-                            directURLParams.forEach((k) => {
-                                if (params.has(k) && links[i].href !== params.get(k)) {
-                                    links[i].href = params.get(k);
-                                }
-                            });
-                        }
-                    }
-                    clearTimeout(timeoutID);
-                }, delayTime);
-            };
-            break;
-    }
-
-    // Youtube additional steps
-    function youtubeDirect() {
-        function run(delayTime) {
-            linkDirect(INDEX_Q, DELAY_TIME.fast);
-            linkDirect(INDEX_Q, DELAY_TIME.normal * 2);
-            const timeoutID = setTimeout(() => {
-                linkDirect(INDEX_Q, 0);
-                document.addEventListener('click', () => {
-                    linkDirect(INDEX_Q, DELAY_TIME.fast);
-                });
-                clearTimeout(timeoutID);
-            }, delayTime);
-        }
-        run(2000);
-        doc.addEventListener('DOMContentLoaded', () => {
-            run(1000);
-        });
-        doc.onvisibilitychange = () => {
-            run(1500);
-        };
-    }
-
-    // Main function
-    (() => {
-        let indexParam;
-        let MenuTitle;
-        switch (navigator.language) {
-            case 'zh-CN' || 'zh-SG':
-                MenuTitle = '手动重新替换';
-                break;
-            case 'zh-TW' || 'zh-HK':
-                MenuTitle = '手動再次替換';
-                break;
-            default:
-                MenuTitle = 'Retry link replacing.';
-                break;
-        }
-
-        const adjust = /(hoyolab|mozilla|firefox)\.(com|org)$/.test(pageHost);
-        const usingTarget = /(juejin|leetcode|gitee|sspai|gcores|zhihu)\.(com|cn)$/.test(pageHost);
-        const isSourceForge = /sourceforge.net$/.test(pageHost);
-        const urlParam = new URLSearchParams(pageParams);
-        switch (true) {
-            case usingTarget:
-                indexParam = INDEX_TARGET;
-                break;
-            case adjust:
-                indexParam = INDEX_ADJUST;
-                linkDirect(indexParam, DELAY_TIME.normal * 2);
-                break;
-            case pageHost.endsWith('youtube.com'):
-                indexParam = INDEX_Q;
-                youtubeDirect();
-                break;
-            case /(s.click.taobao.com|tmall.com)$/.test(pageHost):
-                indexParam = INDEX_GOTO;
-                if (/^s.click.(tmall|taobao).com$/.test(window.location.hostname)
+      case usingTarget:
+        indexParam = INDEX_TARGET;
+        break;
+      case adjust:
+        indexParam = INDEX_ADJUST;
+        linkDirect(indexParam, DELAY_TIME.normal * 2);
+        break;
+      case pageHost.endsWith('youtube.com'):
+        indexParam = INDEX_Q;
+        youtubeDirect();
+        break;
+      case /(s.click.taobao.com|tmall.com)$/.test(pageHost):
+        indexParam = INDEX_GOTO;
+        if (/^s.click.(tmall|taobao).com$/.test(window.location.hostname)
                     && new URLSearchParams(pageParams).has('tar')) {
-                    window.stop();
-                    const targetLink = decodeURIComponent(new URLSearchParams(window.location.search).get('tar'));
-                    if (/^https?:\/\//.test(targetLink)) {
-                        window.location.replace(targetLink);
-                    }
-                }
-                break;
-            case isSourceForge:
-                linkDirect([], DELAY_TIME.normal);
-                break;
-            case /(steampowered|steamcommunity|wiki.biligame|linkedin|douban).com$|pixiv.net$/.test(pageHost):
-                indexParam = INDEX_URL;
-                break;
-            case /(vk|jianshu).com$/.test(pageHost):
-                indexParam = INDEX_TO;
-                break;
-            case pageHost.endsWith('epicgames.com'):
-                indexParam = ['redirectTo'];
-                break;
-            case pageHost.endsWith('oschina.net'):
-                INDEX_URL.push('goto_page');
-                indexParam = INDEX_URL;
-                break;
-            case pageHost.endsWith('xda-developers.com'):
-                INDEX_URL.push('u', 'ued', 'referer');
-                indexParam = INDEX_URL;
-                break;
-            case /(union-click.jd.com|www.linkstars.com)$/.test(pageHost):
-                indexParam = INDEX_TO;
-                if (urlParam.has(indexParam) && /^https?/.test(urlParam.get(indexParam))) {
-                    window.stop();
-                    window.location.href = decodeURIComponent(urlParam.get(indexParam));
-                }
-                break;
-            case /(theverge.com|7tiv.net)$/.test(pageHost):
-                hostRegex = /sjv.io$/;
-                INDEX_URL.push('u');
-                indexParam = INDEX_URL;
-                if (pageHost.endsWith('7tiv.net')
-                    && new URLSearchParams(pageParams).has(indexParam)) {
-                    window.stop();
-                    window.location.href = decodeURIComponent(
-                        new URLSearchParams(pageParams).get(indexParam)
-                    );
-                }
-                break;
-            default:
-                indexParam = [''];
-                break;
+          window.stop();
+          const targetLink = decodeURIComponent(new URLSearchParams(window.location.search).get('tar'));
+          if (/^https?:\/\//.test(targetLink)) {
+            window.location.replace(targetLink);
+          }
         }
+        break;
+      case isSourceForge:
+        linkDirect([], DELAY_TIME.normal);
+        break;
+      case /(steampowered|steamcommunity|wiki.biligame|linkedin|douban).com$|pixiv.net$/.test(pageHost):
+        indexParam = INDEX_URL;
+        break;
+      case /(vk|jianshu).com$/.test(pageHost):
+        indexParam = INDEX_TO;
+        break;
+      case pageHost.endsWith('epicgames.com'):
+        indexParam = ['redirectTo'];
+        break;
+      case pageHost.endsWith('oschina.net'):
+        INDEX_URL.push('goto_page');
+        indexParam = INDEX_URL;
+        break;
+      case pageHost.endsWith('xda-developers.com'):
+        INDEX_URL.push('u', 'ued', 'referer');
+        indexParam = INDEX_URL;
+        break;
+      case /(union-click.jd.com|www.linkstars.com)$/.test(pageHost):
+        indexParam = INDEX_TO;
+        if (urlParam.has(indexParam) && /^https?/.test(urlParam.get(indexParam))) {
+          window.stop();
+          window.location.href = decodeURIComponent(urlParam.get(indexParam));
+        }
+        break;
+      case /(theverge.com|7tiv.net)$/.test(pageHost):
+        hostRegex = /sjv.io$/;
+        INDEX_URL.push('u');
+        indexParam = INDEX_URL;
+        if (pageHost.endsWith('7tiv.net')
+                    && new URLSearchParams(pageParams).has(indexParam)) {
+          window.stop();
+          window.location.href = decodeURIComponent(
+            new URLSearchParams(pageParams).get(indexParam),
+          );
+        }
+        break;
+      default:
+        indexParam = [''];
+        break;
+    }
 
-        doc.addEventListener('DOMContentLoaded', () => {
-            linkDirect(indexParam, DELAY_TIME.normal);
-        });
+    doc.addEventListener('DOMContentLoaded', () => {
+      linkDirect(indexParam, DELAY_TIME.normal);
+    }); // eslint-disable-next-line no-undef
+    GM_registerMenuCommand(
+      MenuTitle,
+      () => { linkDirect(indexParam, 0); },
+      'D',
+    );
 
-        GM_registerMenuCommand(
-            MenuTitle,
-            () => { linkDirect(indexParam, 0); },
-            'D'
-        );
-
-        window.onscroll = () => {
-            const scrolls = doc.documentElement.scrollTop;
-            if (scrolls <= 200) {
-                linkDirect(indexParam, 0);
-                topScroll = scrolls;
-            }
-            if (scrolls - topScroll > 100 && scrolls > 200) {
-                linkDirect(indexParam, 0);
-                topScroll = scrolls;
-            }
-        };
-    })();
+    window.onscroll = () => {
+      const scrolls = doc.documentElement.scrollTop;
+      if (scrolls <= 200) {
+        linkDirect(indexParam, 0);
+        topScroll = scrolls;
+      }
+      if (scrolls - topScroll > 100 && scrolls > 200) {
+        linkDirect(indexParam, 0);
+        topScroll = scrolls;
+      }
+    };
+  })();
 })();
 
 /*
